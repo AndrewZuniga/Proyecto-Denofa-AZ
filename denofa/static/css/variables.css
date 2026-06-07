@@ -1,0 +1,124 @@
+:root {
+  /* ── Color: Brand ─────────────────────────── */
+  --color-brand: #0284c7;
+  /* Vibrant Sky-600 for premium contrast */
+  --color-brand-hover: #0369a1;
+  /* Sky-700 */
+  --color-brand-dark: #075985;
+  /* Sky-800 */
+  --color-brand-light: #e0f2fe;
+  /* Sky-100 */
+
+  /* ── Color: Estado / Credibilidad ─────────── */
+  --color-reliable: #10b981;
+  --color-dubious: #f59e0b;
+  --color-disinfo: #ef4444;
+
+  /* ── Color: Fondo ─────────────────────────── */
+  --color-bg: #ffffff;
+  --color-bg-gradient-end: #ffffff;
+  --color-bg-alt: transparent;
+  --color-surface: #ffffff;
+
+  /* ── Color: Bordes ────────────────────────── */
+  --color-border: #e2e8f0;
+  --color-border-medium: #bec8d2;
+  --color-border-light: rgba(190, 200, 210, 0.3);
+
+  /* ── Color: Texto ─────────────────────────── */
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #3e4850;
+  --color-text-muted: #505f76;
+  --color-text-faint: #6e7881;
+
+  /* ── Color: Highlights ────────────────────── */
+  --color-highlight-green: rgba(16, 185, 129, 0.2);
+  --color-highlight-yellow: rgba(245, 158, 11, 0.2);
+  --color-highlight-red: rgba(239, 68, 68, 0.2);
+
+  /* ── Color: UI Estático ───────────────────── */
+  --color-white: #ffffff;
+  --color-text-on-brand: #ffffff;
+  --color-text-outline-btn: #334155;
+  --color-surface-input: #F8FAFC;
+  --color-border-input: #CBD5E1;
+  --color-card-glass-bg: rgba(255, 255, 255, 0.95);
+  --color-card-glass-border: rgba(30, 41, 59, 0.12);
+
+  /* ── Tipografía: Familias ─────────────────── */
+  --font-sans: 'Merriweather', serif;
+  --font-display: 'Playfair Display', serif;
+  --font-serif: 'Inter', sans-serif;
+
+  /* ── Tipografía: Tamaños ──────────────────── */
+  --font-size-h1: 28px;
+  --font-size-h2: 22px;
+  --font-size-h3: 18px;
+  --font-size-body: 16px;
+  --font-size-label: 14px;
+  --font-size-xs: 12px;
+  --font-size-navbar: 20px;
+  --font-size-score: 48px;
+
+  /* ── Tipografía: Pesos ────────────────────── */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ── Tipografía: Interlineado ─────────────── */
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-read: 1.6;
+  --line-height-loose: 1.7;
+
+  /* ── Espaciado ────────────────────────────── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* ── Bordes Redondeados ───────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 32px;
+  --radius-card: 20px;
+  --radius-pill: 9999px;
+
+  /* ── Sombras ──────────────────────────────── */
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-nav: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 4px rgba(2, 132, 199, 0.12);
+  --shadow-btn-hover: 0 4px 12px rgba(2, 132, 199, 0.1);
+  --shadow-btn-primary-hover: 0 4px 12px rgba(2, 132, 199, 0.15);
+  --shadow-btn-outline-primary: 0 1px 2px rgba(2, 132, 199, 0.05);
+  --shadow-card-glass: 0 20px 40px rgba(15, 23, 42, 0.06),
+    0 8px 16px rgba(14, 165, 233, 0.04);
+
+  /* ── Alturas ──────────────────────────────── */
+  --height-navbar: 64px;
+  --height-btn-primary: 48px;
+  --height-btn-secondary: 40px;
+  --height-input: 48px;
+  --height-textarea-min: 180px;
+
+  /* ── Anchos Máximos ───────────────────────── */
+  --max-width-page: 1140px;
+  --max-width-card: 720px;
+
+  /* ── Transiciones ─────────────────────────── */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* ── Z-Index ──────────────────────────────── */
+  --z-base: 0;
+  --z-above: 10;
+  --z-navbar: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+}

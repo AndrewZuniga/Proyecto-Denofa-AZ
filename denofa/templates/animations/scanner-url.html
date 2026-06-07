@@ -1,0 +1,152 @@
+<style>
+  @keyframes dot-blink {
+    0%   { opacity: 0.2; }
+    20%  { opacity: 1; }
+    100% { opacity: 0.2; }
+  }
+  @keyframes corner-pulse {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.35; }
+  }
+  @keyframes su-scan-move {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(264px); }
+  }
+  @keyframes su-clip-black-shrink {
+    0%, 100% { transform: scaleX(1); }
+    50%      { transform: scaleX(0); }
+  }
+  @keyframes su-clip-blue-grow {
+    0%, 100% { transform: scaleX(0); }
+    50%      { transform: scaleX(1); }
+  }
+
+  .scanner-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    gap: 12px;
+    width: 100%;
+  }
+  .scanner-svg {
+    width: 100%;
+    max-width: 90px;
+    height: auto;
+    aspect-ratio: 323 / 292;
+  }
+  .corner { animation: corner-pulse 4s ease-in-out infinite; }
+
+  /* Barra horizontal */
+  .su-scan-bar {
+    animation: su-scan-move 4s linear infinite;
+  }
+  /* Clip negro: se encoge desde el borde derecho */
+  .su-clip-n-rect {
+    transform-origin: 269px 166px;
+    animation: su-clip-black-shrink 4s linear infinite;
+  }
+  /* Clip celeste: crece desde el borde izquierdo */
+  .su-clip-c-rect {
+    transform-origin: 5px 166px;
+    animation: su-clip-blue-grow 4s linear infinite;
+  }
+
+  .scan-label {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+  }
+  .dot {
+    display: inline-block;
+    animation: dot-blink 1.2s ease-in-out infinite;
+  }
+  .dot:nth-child(1) { animation-delay: 0s; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+</style>
+
+<div class="scanner-wrap">
+  <svg class="scanner-svg" viewBox="0 0 323 292" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <clipPath id="su-clip-c">
+        <rect class="su-clip-c-rect" x="5" y="140" width="264" height="52"/>
+      </clipPath>
+      <clipPath id="su-clip-n">
+        <rect class="su-clip-n-rect" x="5" y="140" width="264" height="52"/>
+      </clipPath>
+    </defs>
+
+    <!-- ESQUINAS -->
+    <path class="corner" d="M269 219V281.5C269 284.261 266.761 286.5 264 286.5H201" stroke="#0ea5e9" stroke-width="10" stroke-linecap="round"/>
+    <path class="corner" d="M68.5 286.5H10C7.23858 286.5 5 284.261 5 281.5V218" stroke="#0ea5e9" stroke-width="10" stroke-linecap="round"/>
+    <path class="corner" d="M5 66.5V10C5 7.23858 7.23858 5 10 5H67.5" stroke="#0ea5e9" stroke-width="10" stroke-linecap="round"/>
+    <path class="corner" d="M208 5H264C266.761 5 269 7.23858 269 10V70.5" stroke="#0ea5e9" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- GLOBO -->
+    <path d="M135 69.5C183.89 69.5 223.5 108.912 223.5 157.5C223.5 206.088 183.89 245.5 135 245.5C86.1098 245.5 46.5 206.088 46.5 157.5C46.5 108.912 86.1098 69.5 135 69.5Z" stroke="black" stroke-width="5"/>
+    <path d="M135.5 67.5V247.5" stroke="black" stroke-width="5"/>
+    <path d="M132.5 69.5C76.9992 90.5 77.4993 225.5 133.5 245.5M68 96.5C91.8012 114.053 109 117 135.5 117" stroke="black" stroke-width="5"/>
+    <path d="M135.5 157L44.5 158" stroke="black" stroke-width="5"/>
+    <path d="M69 219C101 199 119.5 199 135.5 199" stroke="black" stroke-width="5"/>
+    <path d="M135 68V248" stroke="black" stroke-width="5"/>
+    <path d="M137 69.5C192.501 90.5 194.001 225.5 138 245.5M202.5 96.5C178.699 114.053 161.5 117 135 117" stroke="black" stroke-width="5"/>
+    <path d="M135 157L226 158" stroke="black" stroke-width="5"/>
+    <path d="M201.5 219C169.5 199 151 199 135 199" stroke="black" stroke-width="5"/>
+
+    <!-- PILL grande -->
+    <path d="M29 140.5H241C253.426 140.5 263.5 150.574 263.5 163C263.5 175.426 253.426 185.5 241 185.5H29C16.5736 185.5 6.5 175.426 6.5 163C6.5 150.574 16.5736 140.5 29 140.5Z" fill="white" stroke="black" stroke-width="5"/>
+
+    <!-- PILL interior base -->
+    <path d="M137.5 150.5H233.5C240.127 150.5 245.5 155.873 245.5 162.5C245.5 169.127 240.127 174.5 233.5 174.5H137.5C130.873 174.5 125.5 169.127 125.5 162.5C125.5 155.873 130.873 150.5 137.5 150.5Z" fill="white" stroke="black" stroke-width="3"/>
+
+    <!-- CAPA NEGRA -->
+    <g clip-path="url(#su-clip-n)">
+      <path d="M26 150V170.5" stroke="black" stroke-width="3"/>
+      <path d="M26 170.5V160.5C30.0163 152.586 37.4817 155.055 37.5 160.5C37.5183 165.945 37.5 170.5 37.5 170.5" stroke="black" stroke-width="3"/>
+      <path d="M46 151.5V168.5C46.0511 170.281 48 171 50 170.5" stroke="black" stroke-width="3"/>
+      <path d="M66 155.5V176.5" stroke="black" stroke-width="3"/>
+      <path d="M42 155.5H50" stroke="black" stroke-width="3"/>
+      <path d="M56 151V168C56.0511 169.781 58 170.5 60 170" stroke="black" stroke-width="3"/>
+      <path d="M52 155H60" stroke="black" stroke-width="3"/>
+      <path d="M121 149L114 174.5" stroke="black" stroke-width="3"/>
+      <path d="M113 149L106 174.5" stroke="black" stroke-width="3"/>
+      <path d="M66 155V177" stroke="black" stroke-width="3"/>
+      <path d="M66 162C65.6894 155.253 77.0002 153 78.0004 162C79.0007 171 65.5 171.5 65.9999 163" stroke="black" stroke-width="3"/>
+      <path d="M90.5 158.5C90.5 155.5 82.9222 152.798 81.6353 158.5C80.3484 164.202 90.7707 161 90.6353 166C90.5 171 83 171.5 80.5 167.5" stroke="black" stroke-width="3"/>
+      <circle cx="100.5" cy="156.5" r="1.5" fill="black"/>
+      <circle cx="100.5" cy="168.5" r="1.5" fill="black"/>
+      <path d="M137.5 150.5H233.5C240.127 150.5 245.5 155.873 245.5 162.5C245.5 169.127 240.127 174.5 233.5 174.5H137.5C130.873 174.5 125.5 169.127 125.5 162.5C125.5 155.873 130.873 150.5 137.5 150.5Z" fill="white" stroke="black" stroke-width="3"/>
+    </g>
+
+    <!-- CAPA CELESTE -->
+    <g clip-path="url(#su-clip-c)">
+      <path d="M27 150V170.5" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M27 170.5V160.5C31.0163 152.586 38.4817 155.055 38.5 160.5C38.5183 165.945 38.5 170.5 38.5 170.5" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M47 151.5V168.5C47.0511 170.281 49 171 51 170.5" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M67 155.5V176.5" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M43 155.5H51" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M57 151V168C57.0511 169.781 59 170.5 61 170" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M53 155H61" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M122 149L115 174.5" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M114 149L107 174.5" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M67 155V177" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M67 162C66.6894 155.253 78.0002 153 79.0004 162C80.0007 171 66.5 171.5 66.9999 163" stroke="#0EA5E9" stroke-width="3"/>
+      <path d="M91.5 158.5C91.5 155.5 83.9222 152.798 82.6353 158.5C81.3484 164.202 91.7707 161 91.6353 166C91.5 171 84 171.5 81.5 167.5" stroke="#0EA5E9" stroke-width="3"/>
+      <circle cx="101.5" cy="157.5" r="1.5" fill="#0EA5E9" stroke="#0EA5E9" stroke-width="2"/>
+      <circle cx="101.5" cy="169.5" r="1.5" fill="#0EA5E9" stroke="#0EA5E9" stroke-width="2"/>
+      <path d="M137.5 150.5H233.5C240.127 150.5 245.5 155.873 245.5 162.5C245.5 169.127 240.127 174.5 233.5 174.5H137.5C130.873 174.5 125.5 169.127 125.5 162.5C125.5 155.873 130.873 150.5 137.5 150.5Z" fill="#0EA5E9" stroke="black" stroke-width="3"/>
+    </g>
+
+    <!-- BARRA VERTICAL animada (CSS) -->
+    <rect x="2" y="136" width="7" height="58" fill="#0ea5e9" opacity="0.2" rx="2" class="su-scan-bar"/>
+    <line x1="5" y1="136" x2="5" y2="194" stroke="black" stroke-width="5" stroke-linecap="round" class="su-scan-bar"/>
+
+  </svg>
+
+  <span class="scan-label">
+    Verificando URL<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+  </span>
+</div>

@@ -1,0 +1,48 @@
+{% extends 'base/_base.html' %}
+{% load static %}
+
+{% block title %}DenoFA - Historial{% endblock %}
+
+{% block content %}
+<section class="page-canvas">
+  <div class="container" style="display:flex; flex-direction:column; align-items:center; width:100%;">
+    
+    <div style="width:100%; max-width:var(--max-width-card); 
+      display:flex; justify-content:space-between; 
+      align-items:center; margin-bottom:var(--space-lg);">
+      <h1 style="font-family:var(--font-display); 
+        font-size:var(--font-size-h1);">
+        Historial de consultas
+      </h1>
+      <button id="btn-clear"
+        aria-label="Limpiar historial"
+        style="font-size:var(--font-size-label);
+          color:var(--color-disinfo);
+          font-weight:var(--font-weight-semibold);
+          background:none; border:none; cursor:pointer;">
+        Limpiar historial
+      </button>
+    </div>
+
+    <ul id="history-list" 
+      class="history-list"
+      aria-label="Lista de consultas anteriores">
+
+      <li id="empty-state" 
+        style="text-align:center; 
+          padding:var(--space-2xl) 0;
+          color:var(--color-text-muted);
+          font-size:var(--font-size-body);">
+        Aún no has verificado ninguna noticia.
+        ¡Anímate a probar tu primer enlace!
+      </li>
+
+    </ul>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{% static 'js/utils.js' %}"></script>
+<script type="module" src="{% static 'js/historial.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DenoFA{% endblock %}</title>
+  <meta name="description" content="Verificador de noticias con IA y fuentes cruzadas">
+  <link rel="stylesheet" href="{% static 'css/variables.css' %}?v=10">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}?v=10">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}?v=10">
+</head>
+<body>
+  {% include 'partials/_navbar.html' %}
+  
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  
+  {% include 'partials/_footer.html' %}
+  
+  {% block scripts %}{% endblock %}
+</body>
+</html>

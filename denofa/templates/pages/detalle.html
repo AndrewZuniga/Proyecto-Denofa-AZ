@@ -1,0 +1,60 @@
+{% extends 'base/_base.html' %}
+{% load static %}
+
+{% block title %}DenoFA - Análisis detallado{% endblock %}
+
+{% block content %}
+<section class="page-canvas">
+  <div class="container" style="display:flex; flex-direction:column; align-items:center;">
+    <div class="card" style="padding: 0;">
+      
+      <header style="padding: var(--space-xl); border-bottom: 1px solid var(--color-border);">
+        <a href="/resultado/" style="display:inline-flex; align-items:center; gap:4px; font-size:14px; margin-bottom:var(--space-sm); color:var(--color-text-secondary);">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Volver al resultado
+        </a>
+        <h1 style="font-size: 24px;">Análisis detallado</h1>
+      </header>
+
+      <div id="analysis-rows" style="padding: 0 var(--space-xl);">
+        <!-- Estático por ahora -->
+        <article class="analysis-row">
+          <div style="margin-bottom: var(--space-xs);">
+            <span class="verdict-pill verdict-pill--reliable">Verificado</span>
+          </div>
+          <blockquote class="analysis-row__fragment">
+            "según fuentes oficiales del ministerio"
+          </blockquote>
+          <p class="analysis-row__explanation">
+            Esta afirmación fue contrastada con el boletín oficial publicado el 12 de marzo de 2025. Los registros indican que efectivamente hubo una comunicación ministerial que respalda los datos numéricos presentados en el informe original.
+          </p>
+        </article>
+
+        <article class="analysis-row">
+          <div style="margin-bottom: var(--space-xs);">
+            <span class="verdict-pill verdict-pill--disinfo">No verificado</span>
+          </div>
+          <blockquote class="analysis-row__fragment">
+            "el impacto directo será inmediato en la población local"
+          </blockquote>
+          <p class="analysis-row__explanation">
+            No se han encontrado estudios independientes o proyecciones oficiales que puedan garantizar la inmediatez del impacto. Diversos analistas sugieren un plazo de implementación gradual que podría demorar entre 6 y 18 meses.
+          </p>
+        </article>
+      </div>
+
+      <div class="actions-row" style="padding: var(--space-xl); border-top: 1px solid var(--color-border);">
+        <a href="/resultado/" class="btn btn--outline" style="flex:1; text-align:center;">Volver</a>
+        <a href="/" class="btn btn--primary" style="flex:1; text-align:center;">Nueva consulta</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{% static 'js/detalle.js' %}"></script>
+{% endblock %}

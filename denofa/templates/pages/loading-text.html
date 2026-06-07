@@ -1,0 +1,23 @@
+{% extends 'base/_base.html' %}
+{% load static %}
+
+{% block title %}Verificando integridad del texto...{% endblock %}
+
+{% block content %}
+<section class="page-canvas">
+  <div class="container" style="display:flex; flex-direction:column; align-items:center;">
+    <div class="card">
+      <h1 style="font-size: 22px; margin-bottom: var(--space-md);">Verificando integridad del texto...</h1>
+      
+      {% include 'animations/scanner-text.html' %}
+
+      <ul id="steps-list" class="steps-list" aria-live="polite" aria-label="Pasos de verificación" style="margin-top: var(--space-md);"></ul>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{% static 'js/utils.js' %}"></script>
+<script type="module" src="{% static 'js/loading.js' %}"></script>
+{% endblock %}

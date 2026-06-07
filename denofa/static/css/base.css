@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap');
+@import 'variables.css';
+
+/* ── RESET BÁSICO ───────────────────────
+   Limpieza de márgenes y box-sizing.
+──────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── BODY ───────────────────────────────
+   Estilos globales, fuente principal, fondo.
+──────────────────────────────────────── */
+body {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-base);
+    color: var(--color-text-primary);
+    background: radial-gradient(circle, var(--color-bg) 0%, var(--color-bg-gradient-end) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding-top: var(--height-navbar);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── TIPOGRAFÍA ─────────────────────────
+   Encabezados y elementos de texto generales.
+──────────────────────────────────────── */
+h1 {
+    font-size: var(--font-size-h1);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+}
+
+h2 {
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+}
+
+h3 {
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+}
+
+a {
+    color: var(--color-brand);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--color-brand-hover);
+}
+
+/* ── CONTENEDORES ───────────────────────
+   Contenedores principales y layout general.
+──────────────────────────────────────── */
+.container {
+    width: 100%;
+    max-width: var(--max-width-page);
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+}
+
+.page-canvas {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-2xl) var(--space-md);
+    min-height: calc(100vh - var(--height-navbar));
+}
+
+.card {
+    background-color: var(--color-surface);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card-glass);
+    padding: var(--space-xl);
+    width: 100%;
+    max-width: var(--max-width-card);
+    border: 1px solid var(--color-card-glass-border);
+}
+
+/* ── BOTONES GLOBALES ───────────────────
+   Clases de botones genéricas.
+──────────────────────────────────────── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-fast);
+}
+
+.btn:disabled,
+.btn.btn--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn--primary {
+    background-color: var(--color-brand);
+    color: var(--color-text-on-brand);
+    min-height: var(--height-btn-primary);
+    padding: 0 var(--space-lg);
+    box-shadow: var(--shadow-btn);
+}
+
+.btn--primary:hover {
+    background-color: var(--color-brand-hover);
+}
+
+.btn--outline {
+    background-color: var(--color-white);
+    color: var(--color-text-outline-btn);
+    border: 1px solid var(--color-border-input);
+    min-height: var(--height-btn-secondary);
+    padding: 0 var(--space-md);
+    box-shadow: var(--shadow-btn);
+}
+
+.btn--outline:hover {
+    background-color: var(--color-surface-input);
+    color: var(--color-brand);
+    border-color: var(--color-brand);
+    box-shadow: var(--shadow-btn-hover);
+}
+
+.btn--outline-primary {
+    background-color: var(--color-white);
+    color: var(--color-brand);
+    border: 1px solid var(--color-brand);
+    min-height: var(--height-btn-primary);
+    padding: 0 var(--space-md);
+    box-shadow: var(--shadow-btn-outline-primary);
+}
+
+.btn--outline-primary:hover {
+    background-color: var(--color-brand-light);
+    color: var(--color-brand-hover);
+    box-shadow: var(--shadow-btn-primary-hover);
+}
+
+.btn--icon {
+    width: var(--height-btn-primary);
+    padding: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn--half {
+    flex: 1;
+}

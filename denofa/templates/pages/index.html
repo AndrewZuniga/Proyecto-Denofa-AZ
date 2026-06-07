@@ -1,0 +1,175 @@
+{% extends 'base/_base.html' %}
+{% load static %}
+
+{% block title %}DenoFA - ¿Es esto real?{% endblock %}
+
+{% block content %}
+<section class="page-canvas">
+  <div class="container" style="display:flex; flex-direction:column; align-items:center;">
+    
+    <header style="text-align: center; margin-bottom: var(--space-xl);">
+      <h1 style="margin-bottom: var(--space-sm);">¿Es esto real?</h1>
+      <p class="subtitle-rotator">
+        <span id="rotator-text"></span>
+      </p>
+    </header>
+
+    <div class="stats-row">
+      <div class="stats-row__item">
+        <img src="{% static 'images/icons/scan.png' %}"
+          alt="" aria-hidden="true"
+          class="stats-row__icon">
+        <span class="stats-row__label">
+          Detección automática
+        </span>
+      </div>
+
+      <div class="stats-row__item">
+        <img src="{% static 'images/icons/time.png' %}"
+          alt="" aria-hidden="true"
+          class="stats-row__icon">
+        <span class="stats-row__label">
+          Análisis rápido
+        </span>
+      </div>
+
+      <div class="stats-row__item">
+        <img src="{% static 'images/icons/chart-bar.png' %}"
+          alt="" aria-hidden="true"
+          class="stats-row__icon">
+        <span class="stats-row__label">
+          Score de confianza
+        </span>
+      </div>
+    </div>
+
+    <div class="card" style="position:relative;">
+      
+      <!-- STATE 1: INPUT -->
+      <div id="state-input" class="state-panel state--active">
+        <div class="textarea-wrap">
+          <textarea id="main-textarea" class="textarea" placeholder="Pega aquí el texto de la noticia, un enlace web o sube una captura de pantalla..." maxlength="5000" aria-label="Contenido a verificar"></textarea>
+          <span id="char-counter" class="char-counter" aria-live="polite">0 / 5000</span>
+        </div>
+
+        <div class="actions-row">
+          <button id="btn-paste" class="btn btn--outline" style="flex:1;" aria-label="Pegar contenido">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="4" y="3" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Pegar contenido
+          </button>
+          <button id="btn-upload" class="btn btn--outline" style="flex:1;" aria-label="Subir imagen">
+            <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M8 13V5M8 5l-3 3M8 5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1 17h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Subir imagen
+          </button>
+        </div>
+        
+        <p style="font-size: var(--font-size-xs); color: var(--color-text-faint);">
+          Mínimo 20 caracteres. No se admiten URLs de redes sociales, usa la opción de imagen.
+        </p>
+
+        <button id="btn-analyze" class="btn btn--primary btn--disabled" disabled aria-label="Analizar contenido" style="width:100%;">
+          Analizar
+        </button>
+
+        <div class="methodology-bar" aria-label="Metodología de verificación">
+          <span class="methodology-bar__label">Metodología:</span>
+          <span class="tag tag--blue">Fuentes Cruzadas</span>
+          <span class="tag tag--blue">Gemini API</span>
+        </div>
+
+        <input type="file" id="file-input" accept="image/*" style="display:none;" aria-hidden="true">
+      </div>
+
+      <!-- STATE 2: LOADING -->
+      <div id="state-loading" class="state-panel">
+        <div id="loading-default" style="display: none; flex-direction: column; align-items: center;">
+          <div class="spinner-wrap">
+            <div class="spinner" role="status" aria-label="Cargando"></div>
+          </div>
+        </div>
+        <div id="loading-text-anim" style="display: none;">
+          {% include 'animations/scanner-text.html' %}
+        </div>
+        <div id="loading-image-anim" style="display: none;">
+          {% include 'animations/scanner-image.html' %}
+        </div>
+        <div id="loading-url-anim" style="display: none;">
+          {% include 'animations/scanner-url.html' %}
+        </div>
+        <h2 style="font-size: 18px;">Analizando contenido...</h2>
+        <p style="font-family: var(--font-serif); font-size: 14px; color: var(--color-text-muted);">
+          Estamos verificando la información. Esto puede tardar unos segundos.
+        </p>
+        
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar__fill progress-bar__fill--loading"></div>
+        </div>
+
+        <ul id="steps-list" class="steps-list" aria-live="polite" aria-label="Pasos de verificación"></ul>
+      </div>
+
+      <!-- STATE 3: RESULT -->
+      <div id="state-result" class="state-panel">
+        <div class="verdict-section">
+          <span id="verdict-badge" class="badge badge--reliable">CONFIABLE</span>
+          <div class="verdict-score">
+            <span id="verdict-score-num" class="verdict-score__num verdict-score__num--reliable">0</span>
+            <span class="verdict-score__denom">/ 100</span>
+          </div>
+          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+            <div id="progress-fill" class="progress-bar__fill progress-bar__fill--reliable" style="width:0%;"></div>
+          </div>
+        </div>
+
+        <section aria-labelledby="why-heading" style="margin-top: var(--space-xl);">
+          <h3 id="why-heading" style="font-size: 12px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-md);">ESTO ES LO QUE ENCONTRAMOS</h3>
+          <div id="explanation-text" class="explanation-text"></div>
+        </section>
+
+        <section aria-labelledby="fragments-heading">
+          <div class="fragments-header">
+            <h3 id="fragments-heading" class="fragments-title">Fragmentos detectados</h3>
+            <a id="btn-ver-detalle" href="detalle.html" 
+               class="fragments-link"
+               aria-label="Ver análisis detallado">
+              Ver más detalles →
+            </a>
+          </div>
+          <div id="fragments-tags" class="fragments-tags"></div>
+        </section>
+
+        <div class="actions-row" style="margin-top: var(--space-xl);">
+          <button id="btn-share" class="btn btn--outline-primary btn--icon" aria-label="Compartir resultado">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="15" cy="3" r="2" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="15" cy="17" r="2" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="3" cy="10" r="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 11.5l8 4M13 4.5L5 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button id="btn-save" class="btn btn--outline-primary btn--half" style="flex:1;" aria-label="Guardar resultado">
+            Guardar
+          </button>
+          <button id="btn-nueva-consulta" class="btn btn--primary btn--half" style="flex:1;" aria-label="Nueva consulta">
+            Nueva consulta
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{% static 'js/utils.js' %}?v=10"></script>
+<script type="module" src="{% static 'js/loading.js' %}?v=12"></script>
+<script type="module" src="{% static 'js/resultado.js' %}?v=10"></script>
+<script type="module" src="{% static 'js/home.js' %}?v=10"></script>
+{% endblock %}
