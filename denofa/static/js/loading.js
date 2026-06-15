@@ -97,6 +97,38 @@ export function runSteps(type) {
   renderSteps(steps);
 
   let currentStep = 0;
+  let backendResult = null;
+  let backendError = null;
+
+  // Disparar llamada al backend inmediatamente
+  const textValue = document.getElementById('main-textarea')?.value || '';
+  
+  // Obtener el token CSRF de las cookies de Django
+  const csrfToken = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1] || '';
+
+  fetch('/analyze/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({ text: textValue })
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => { throw new Error(err.error || 'Error al analizar'); });
+    }
+    return res.json();
+  })
+  .then(data => {
+    backendResult = data;
+  })
+  .catch(err => {
+    backendError = err.message;
+  });
 
   function nextStep() {
     if (currentStep > 0) {
@@ -114,10 +146,16 @@ export function runSteps(type) {
     } else {
       // Done
       setTimeout(() => {
+        if (backendError) {
+          alert(backendError);
+          showState('state-input');
+          return;
+        }
+        
         // If SPA mode
         if (document.getElementById('state-result')) {
           showState('state-result');
-          renderResult();
+          renderResult(backendResult); // Pasar resultado del backend
         } else {
           // Fallback if individual page
           window.location.href = '/resultado/';

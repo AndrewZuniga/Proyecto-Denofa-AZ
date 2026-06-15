@@ -135,8 +135,8 @@ function initButtons(result) {
   }
 }
 
-export function renderResult() {
-  const res = MOCK_RESULT;
+export function renderResult(result) {
+  const res = result || MOCK_RESULT;
   renderVerdict(res);
   renderExplanation(res);
   renderFragments(res);
