@@ -1,6 +1,6 @@
 # denofa/application/ports.py
 from abc import ABC, abstractmethod
-from typing import TypedDict, BinaryIO
+from typing import TypedDict, BinaryIO, Any
 # 1. Definir excepciones de dominio específicas
 class PortException(Exception): """Excepción base para fallos de puertos."""
 class ScrapingError(PortException): """Error al extraer contenido web."""
@@ -38,4 +38,12 @@ class HistoryRepositoryPort(ABC):
     @abstractmethod
     def get_session_history(self, session_key: str) -> list[CredibilityResult]:
         """Recupera la lista cronológica de análisis de la sesión activa."""
+        pass
+    @abstractmethod
+    def get_analysis_by_id(self, analysis_id: int) -> Any:
+        """Recupera un análisis específico por su identificador primario."""
+        pass
+    @abstractmethod
+    def delete_session_history(self, session_key: str) -> None:
+        """Elimina todos los análisis asociados a una sesión activa."""
         pass

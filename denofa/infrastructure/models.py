@@ -35,7 +35,6 @@ class SessionAnalysis(models.Model):
         help_text="Puntaje numérico de credibilidad en el rango de 0 a 100."
     )
     explanation = models.TextField(
-        max_length=500,
         help_text="Justificación analítica en lenguaje comprensible (máximo 120 palabras)."
     )
     
