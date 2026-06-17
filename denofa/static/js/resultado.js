@@ -130,7 +130,7 @@ function initButtons(result) {
       e.preventDefault();
       sessionStorage.setItem('currentAnalysisId', result.id);
       sessionStorage.setItem('returnUrl', window.location.pathname);
-      window.location.href = '/detalle/';
+      window.location.href = `/detalle/${result.id}/`;
     });
   }
 }

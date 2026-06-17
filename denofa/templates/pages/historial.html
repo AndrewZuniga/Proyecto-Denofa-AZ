@@ -43,6 +43,9 @@
 {% endblock %}
 
 {% block scripts %}
-<script type="module" src="{% static 'js/utils.js' %}"></script>
-<script type="module" src="{% static 'js/historial.js' %}"></script>
+<script id="analyses-data" type="application/json">
+  {{ analyses_json|safe }}
+</script>
+<script type="module" src="{% static 'js/utils.js' %}?v=11"></script>
+<script type="module" src="{% static 'js/historial.js' %}?v=11"></script>
 {% endblock %}

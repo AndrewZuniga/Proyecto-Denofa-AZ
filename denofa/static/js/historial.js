@@ -1,8 +1,5 @@
-/**
- * DenoFA – History Page Logic
- */
-
-import { NAVBAR_HTML, FOOTER_HTML, formatDate, loadHistory } from './utils.js';
+// denofa/static/js/historial.js
+import { formatDate } from './utils.js';
 
 const VERDICT_PILL_MAP = {
   'CONFIABLE':               'verdict-pill--reliable',
@@ -10,17 +7,24 @@ const VERDICT_PILL_MAP = {
   'PROBABLE DESINFORMACIÓN': 'verdict-pill--disinfo',
 };
 
-function initNavAndFooter() {
-  const navbarContainer = document.getElementById('navbar-placeholder');
-  const footerContainer = document.getElementById('footer-placeholder');
-  if (navbarContainer) navbarContainer.innerHTML = NAVBAR_HTML('historial');
-  if (footerContainer) footerContainer.innerHTML = FOOTER_HTML;
+function loadHistory() {
+  const el = document.getElementById('analyses-data');
+  if (el) {
+    try {
+      return JSON.parse(el.textContent);
+    } catch (e) {
+      console.error('Error parsing analyses data:', e);
+    }
+  }
+  return [];
 }
+
+
 
 function renderCard(item) {
   return `
     <li>
-      <a href="detalle.html?id=${item.id}" 
+      <a href="/detalle/${item.id}/" 
          class="history-card"
          aria-label="Ver detalle del análisis">
         <div class="history-card__content">
@@ -82,12 +86,13 @@ function renderHistory(items) {
   detailLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      const url = new URL(link.href, window.location.href);
-      const id = url.searchParams.get('id');
+      // Obtener el ID desde el href (ej: /detalle/10/)
+      const parts = link.getAttribute('href').split('/');
+      const id = parts[parts.length - 2];
       if (id) {
         sessionStorage.setItem('currentAnalysisId', id);
         sessionStorage.setItem('returnUrl', window.location.pathname);
-        window.location.href = '/detalle/';
+        window.location.href = `/detalle/${id}/`;
       }
     });
   });
@@ -99,15 +104,34 @@ function initClearButton() {
 
   btn.addEventListener('click', () => {
     if (confirm('¿Eliminar todo el historial?')) {
-      localStorage.removeItem('denofaHistory');
-      renderHistory([]);
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1] || '';
+
+      fetch('/historial/limpiar/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      })
+      .then(res => {
+        if (res.ok) {
+          renderHistory([]);
+        } else {
+          alert('Error al limpiar el historial de la sesión');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error al conectar con el servidor.');
+      });
     }
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('history-list')) {
-    initNavAndFooter();
     const items = loadHistory();
     renderHistory(items);
     initClearButton();
