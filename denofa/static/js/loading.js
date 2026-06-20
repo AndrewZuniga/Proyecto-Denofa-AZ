@@ -97,6 +97,8 @@ export function runSteps(type) {
   renderSteps(steps);
 
   let currentStep = 0;
+  let isFetchDone = false;
+  let isAnimationDone = false;
   let backendResult = null;
   let backendError = null;
 
@@ -109,14 +111,30 @@ export function runSteps(type) {
     .find(row => row.startsWith('csrftoken='))
     ?.split('=')[1] || '';
 
-  fetch('/analyze/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken
-    },
-    body: JSON.stringify({ text: textValue })
-  })
+  let fetchPromise;
+
+  if (window.selectedImageFile) {
+    const formData = new FormData();
+    formData.append('image', window.selectedImageFile);
+    fetchPromise = fetch('/analyze/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken
+      },
+      body: formData
+    });
+  } else {
+    fetchPromise = fetch('/analyze/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({ text: textValue })
+    });
+  }
+
+  fetchPromise
   .then(res => {
     if (!res.ok) {
       return res.json().then(err => { throw new Error(err.error || 'Error al analizar'); });
@@ -125,10 +143,42 @@ export function runSteps(type) {
   })
   .then(data => {
     backendResult = data;
+    isFetchDone = true;
+    if (isAnimationDone) {
+      handleFinishedAnalysis();
+    }
   })
   .catch(err => {
     backendError = err.message;
+    isFetchDone = true;
+    if (isAnimationDone) {
+      handleFinishedAnalysis();
+    }
   });
+
+  function handleFinishedAnalysis() {
+    if (backendError) {
+      alert(backendError);
+      showState('state-input');
+      return;
+    }
+    
+    // Mark final step as done
+    if (steps.length > 0) {
+      markStepDone(steps.length - 1);
+    }
+    
+    setTimeout(() => {
+      // If SPA mode
+      if (document.getElementById('state-result')) {
+        showState('state-result');
+        renderResult(backendResult);
+      } else {
+        // Fallback if individual page
+        window.location.href = '/resultado/';
+      }
+    }, 600);
+  }
 
   function nextStep() {
     if (currentStep > 0) {
@@ -142,25 +192,27 @@ export function runSteps(type) {
         delay = 1000; // Exact 4 seconds total (4 steps * 1000ms)
       }
       currentStep++;
-      setTimeout(nextStep, delay);
-    } else {
-      // Done
-      setTimeout(() => {
-        if (backendError) {
-          alert(backendError);
-          showState('state-input');
-          return;
-        }
-        
-        // If SPA mode
-        if (document.getElementById('state-result')) {
-          showState('state-result');
-          renderResult(backendResult); // Pasar resultado del backend
-        } else {
-          // Fallback if individual page
-          window.location.href = '/resultado/';
-        }
-      }, 600);
+      
+      // If this is the last step, we hold and wait for the fetch to resolve
+      if (currentStep === steps.length) {
+        setTimeout(() => {
+          isAnimationDone = true;
+          if (isFetchDone) {
+            handleFinishedAnalysis();
+          } else {
+            // Update the text of the last step to indicate finalization while keeping spinner active
+            const lastStepEl = document.getElementById(`step-${steps.length - 1}`);
+            if (lastStepEl) {
+              const textSpan = lastStepEl.querySelectorAll('span')[1];
+              if (textSpan) {
+                textSpan.textContent = "Finalizando análisis...";
+              }
+            }
+          }
+        }, delay);
+      } else {
+        setTimeout(nextStep, delay);
+      }
     }
   }
 

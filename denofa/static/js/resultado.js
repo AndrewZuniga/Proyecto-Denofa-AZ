@@ -5,18 +5,7 @@
 import { animateNumber, saveToHistory } from './utils.js';
 import { showState } from './home.js';
 
-const MOCK_RESULT = {
-  id: Date.now(),
-  verdict: 'CONFIABLE',
-  score: 87,
-  explanation: 'El reciente reporte sobre la implementación de <mark class="highlight--green">nuevas energías renovables en el país</mark> muestra una <mark class="highlight--yellow">ligera discrepancia</mark> en las fechas estimadas de finalización, pero los datos duros sobre la <mark class="highlight--green">inversión y el ahorro proyectado</mark> son completamente precisos y coinciden con los <mark class="highlight--green">registros oficiales del ministerio de energía.</mark>',
-  fragments: [
-    { text: 'Fuente verificada', status: 'reliable' },
-    { text: 'Dato contrastado', status: 'reliable' }
-  ],
-  date: new Date().toISOString(),
-  excerpt: 'El reciente reporte sobre la implementación de nuevas energías renovables...'
-};
+
 
 const VERDICT_CONFIG = {
   'CONFIABLE': {
@@ -136,11 +125,17 @@ function initButtons(result) {
 }
 
 export function renderResult(result) {
-  const res = result || MOCK_RESULT;
-  renderVerdict(res);
-  renderExplanation(res);
-  renderFragments(res);
-  initButtons(res);
+  if (!result) {
+    const explanationText = document.getElementById('explanation-text');
+    if (explanationText) {
+      explanationText.innerHTML = '<span class="error-text" style="color:var(--color-disinfo); font-weight:var(--font-weight-bold);">Error: No se recibieron datos válidos del análisis.</span>';
+    }
+    return;
+  }
+  renderVerdict(result);
+  renderExplanation(result);
+  renderFragments(result);
+  initButtons(result);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

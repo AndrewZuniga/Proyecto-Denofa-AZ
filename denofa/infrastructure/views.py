@@ -86,20 +86,53 @@ def analyze_view(request):
             
         session_key = request.session.session_key
         
-        if request.content_type == 'application/json':
-            data = json.loads(request.body)
-            text = data.get('text', '')
+        input_type = 'text'
+
+        if 'image' in request.FILES:
+            image_file = request.FILES['image']
+            image_bytes = image_file.read()
+            mime_type = image_file.content_type or 'image/png'
+            
+            from denofa.infrastructure.adapters.ai_analysis_adapter import GeminiAiAnalysisAdapter
+            ai_adapter = GeminiAiAnalysisAdapter()
+            try:
+                text_to_analyze = ai_adapter.extract_text_from_image(image_bytes, mime_type)
+            except ValueError as e:
+                return JsonResponse({'error': str(e)}, status=400)
+            
+            text = text_to_analyze
+            input_type = 'image'
         else:
-            text = request.POST.get('text', '')
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+                text = data.get('text', '')
+            else:
+                text = request.POST.get('text', '')
+            
+            text_to_analyze = text.strip()
+            if text_to_analyze.lower().startswith('http'):
+                from denofa.domain.services import CredibilityDomainService
+                url_validation = CredibilityDomainService.validate_url(text_to_analyze)
+                if not url_validation['valid']:
+                    return JsonResponse({'error': url_validation['error']}, status=400)
+                
+                from denofa.infrastructure.adapters.url_scraper import scrape_url
+                text_to_analyze = scrape_url(url_validation['url'])
+                input_type = 'url'
             
         # 1. Ejecutar análisis sintáctico/dominio
-        analyze_use_case = AnalyzeTextUseCase()
-        result = analyze_use_case.execute(text)
+        from denofa.infrastructure.adapters.ai_analysis_adapter import GeminiAiAnalysisAdapter
+        ai_adapter = GeminiAiAnalysisAdapter()
+        analyze_use_case = AnalyzeTextUseCase(ai_port=ai_adapter)
+        result = analyze_use_case.execute(text_to_analyze)
         
+        if isinstance(result, dict) and result.get("not_news") is True:
+            return JsonResponse({"error": "El contenido ingresado no parece ser una noticia o afirmación verificable."}, status=400)
+            
         # 2. Persistir automáticamente en base de datos
         repository = DjangoHistoryRepositoryAdapter()
         save_use_case = SaveAnalysisUseCase(repository)
-        analysis_obj = save_use_case.execute(session_key, 'text', text, result)
+        analysis_obj = save_use_case.execute(session_key, input_type, text, result)
         
         # 3. Adjuntar el ID autogenerado a la respuesta
         result['id'] = analysis_obj.id
@@ -109,6 +142,7 @@ def analyze_view(request):
     except ValueError as e:
         return JsonResponse({'error': str(e)}, status=400)
     except Exception as e:
+        print(f"ERROR EN ANALYZE_VIEW: {type(e).__name__}: {e}")
         return JsonResponse({'error': 'Error interno al procesar la solicitud.'}, status=500)
 
 def clear_history_view(request):
@@ -125,4 +159,16 @@ def clear_history_view(request):
     use_case.execute(session_key)
     
     return JsonResponse({'status': 'ok'})
-
+
+def about_view(request):
+    return render(request, 'pages/about.html')
+
+def privacy_view(request):
+    return render(request, 'pages/privacidad.html')
+
+def terms_view(request):
+    return render(request, 'pages/terminos.html')
+
+def contact_view(request):
+    return render(request, 'pages/contacto.html')
+

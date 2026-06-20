@@ -1,3 +1,6 @@
+import os
+import json
+
 class CredibilityDomainService:
     """
     Contiene las reglas de negocio puras para la clasificación taxonómica 

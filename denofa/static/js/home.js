@@ -83,6 +83,9 @@ function initUploadButton() {
   const btn = document.getElementById('btn-upload');
   const input = document.getElementById('file-input');
   const textarea = document.getElementById('main-textarea');
+  const previewWrap = document.getElementById('image-preview-wrap');
+  const previewImg = document.getElementById('image-preview');
+  const btnAnalyze = document.getElementById('btn-analyze');
   if (!btn || !input) return;
 
   btn.addEventListener('click', () => {
@@ -91,14 +94,32 @@ function initUploadButton() {
 
   input.addEventListener('change', (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      if (textarea) {
-        textarea.value = `[Imagen cargada: ${e.target.files[0].name}]`;
-        textarea.dispatchEvent(new Event('input'));
-      }
-      showState('state-loading');
-      runSteps('image');
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        previewImg.src = event.target.result;
+        previewWrap.style.display = 'block';
+        if (textarea) textarea.style.display = 'none';
+        btnAnalyze.disabled = false;
+        btnAnalyze.classList.remove('btn--disabled');
+      };
+      reader.readAsDataURL(file);
+      window.selectedImageFile = file;
     }
   });
+
+  const btnRemove = document.getElementById('btn-remove-image');
+  if (btnRemove) {
+    btnRemove.addEventListener('click', () => {
+      previewWrap.style.display = 'none';
+      previewImg.src = '';
+      if (textarea) textarea.style.display = 'block';
+      window.selectedImageFile = null;
+      input.value = '';
+      btnAnalyze.disabled = true;
+      btnAnalyze.classList.add('btn--disabled');
+    });
+  }
 }
 
 function initAnalyzeButton() {
@@ -107,9 +128,14 @@ function initAnalyzeButton() {
   if (!btn || !textarea) return;
 
   btn.addEventListener('click', () => {
-    const type = detectContentType(textarea.value);
-    showState('state-loading');
-    runSteps(type);
+    if (window.selectedImageFile) {
+      showState('state-loading');
+      runSteps('image');
+    } else {
+      const type = detectContentType(textarea.value);
+      showState('state-loading');
+      runSteps(type);
+    }
   });
 }
 
