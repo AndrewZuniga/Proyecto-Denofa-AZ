@@ -56,89 +56,36 @@ const ARC_TOTAL   = 345.6;   // longitud total del semicírculo (π × 110)
 const DISINFO_END = 0.39;    // 0–39 ocupa el 39 % del arco
 const DUBIOUS_END = 0.69;    // 40–69 llega hasta el 69 % del arco
 
-/**
- * Calcula los parámetros stroke-dasharray de cada segmento para un score dado.
- * @param {number} score – valor 0-100
- * @returns {{ disinfo, dubious, reliable }} con { filled, empty, offset } en px
- */
-function calcSegments(score) {
-  const filled = (score / 100) * ARC_TOTAL;  // px revelados hasta el score
+// Los segmentos de colores están fijos bajo la máscara en el HTML
 
-  const disinfoFill  = Math.min(filled, DISINFO_END * ARC_TOTAL);
-  const dubiousFill  = Math.max(0, Math.min(filled, DUBIOUS_END * ARC_TOTAL) - DISINFO_END * ARC_TOTAL);
-  const reliableFill = Math.max(0, filled - DUBIOUS_END * ARC_TOTAL);
 
-  return {
-    disinfo: {
-      filled: disinfoFill,
-      empty:  ARC_TOTAL - disinfoFill,
-      offset: 0
-    },
-    dubious: {
-      filled: dubiousFill,
-      empty:  ARC_TOTAL - dubiousFill,
-      offset: -(DISINFO_END * ARC_TOTAL)   // retrocede al inicio del segmento ámbar
-    },
-    reliable: {
-      filled: reliableFill,
-      empty:  ARC_TOTAL - reliableFill,
-      offset: -(DUBIOUS_END * ARC_TOTAL)   // retrocede al inicio del segmento verde
-    }
-  };
-}
-
-/**
- * Genera los tick marks y etiquetas de escala (0, 20, 40, 60, 80, 100)
- * en el elemento <g id="gauge-ticks"> del SVG.
- */
 function buildTicks() {
   const g = document.getElementById('gauge-ticks');
   if (!g || g.childElementCount > 0) return; // construir solo una vez
 
   const cx = 130, cy = 130, R = 110;
-  const allVals  = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-  const mainVals = new Set([0, 20, 40, 60, 80, 100]);
+  const mainVals = [0, 100];
 
-  allVals.forEach(val => {
+  mainVals.forEach(val => {
     // ángulo: −180° (izquierda, val=0) → 0° (derecha, val=100)
     const angleDeg = -180 + (val / 100) * 180;
     const angleRad = (angleDeg * Math.PI) / 180;
 
-    const isMain = mainVals.has(val);
-    const r1 = R - 16;                    // inicio del tick (borde interno del arco)
-    const r2 = r1 - (isMain ? 12 : 7);   // final del tick
+    const labelR = R - 24; // Un poco por dentro
+    const lx = cx + labelR * Math.cos(angleRad);
+    const ly = cy + labelR * Math.sin(angleRad);
 
-    const x1 = cx + r1 * Math.cos(angleRad);
-    const y1 = cy + r1 * Math.sin(angleRad);
-    const x2 = cx + r2 * Math.cos(angleRad);
-    const y2 = cy + r2 * Math.sin(angleRad);
-
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1.toFixed(2));
-    line.setAttribute('y1', y1.toFixed(2));
-    line.setAttribute('x2', x2.toFixed(2));
-    line.setAttribute('y2', y2.toFixed(2));
-    line.setAttribute('stroke', 'var(--color-border-medium)');
-    line.setAttribute('stroke-width', isMain ? '2' : '1.2');
-    line.setAttribute('stroke-linecap', 'round');
-    g.appendChild(line);
-
-    if (isMain) {
-      const labelR = r2 - 11;
-      const lx = cx + labelR * Math.cos(angleRad);
-      const ly = cy + labelR * Math.sin(angleRad);
-
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', lx.toFixed(2));
-      text.setAttribute('y', ly.toFixed(2));
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'middle');
-      text.setAttribute('font-size', '9');
-      text.setAttribute('fill', 'var(--color-text-faint)');
-      text.setAttribute('font-family', 'Inter, sans-serif');
-      text.textContent = val;
-      g.appendChild(text);
-    }
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', lx.toFixed(2));
+    text.setAttribute('y', ly.toFixed(2));
+    text.setAttribute('text-anchor', val === 0 ? 'start' : 'end');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('font-size', '14');
+    text.setAttribute('fill', 'var(--color-text-faint)');
+    text.setAttribute('font-family', 'Inter, sans-serif');
+    text.setAttribute('font-weight', '600');
+    text.textContent = val;
+    g.appendChild(text);
   });
 }
 
@@ -148,54 +95,41 @@ function buildTicks() {
  * @param {number} durationMs – duración de la animación
  */
 function animateGauge(score, durationMs = 1200) {
-  const segDisinfo  = document.getElementById('gauge-seg-disinfo');
-  const segDubious  = document.getElementById('gauge-seg-dubious');
-  const segReliable = document.getElementById('gauge-seg-reliable');
+  const maskArc = document.getElementById('gauge-mask-arc');
   const needleGroup = document.getElementById('gauge-needle-group');
-  const scoreNum    = document.getElementById('gauge-score-num');
 
-  if (!segDisinfo || !segDubious || !segReliable || !needleGroup) return;
+  if (!maskArc || !needleGroup) return;
 
-  // Iniciar en 0 de forma explícita (sin transición)
-  [segDisinfo, segDubious, segReliable].forEach(el => {
-    el.style.transition = 'none';
-    el.setAttribute('stroke-dasharray', `0 ${ARC_TOTAL}`);
-  });
+  // Iniciar en 0 de forma explícita
+  maskArc.style.transition = 'none';
+  maskArc.setAttribute('stroke-dasharray', `0 ${ARC_TOTAL}`);
+
   needleGroup.style.transition = 'none';
-  needleGroup.setAttribute('transform', 'translate(130,130) rotate(-90)');
+  needleGroup.setAttribute('transform', 'rotate(0 130 130)');
 
   // Forzar reflow para que el estado inicial sea reconocido por el navegador
-  void segDisinfo.getBoundingClientRect();
+  void maskArc.getBoundingClientRect();
 
   // Reactivar transición y animar al estado final
   requestAnimationFrame(() => {
     setTimeout(() => {
       const transitionVal = `stroke-dasharray ${durationMs}ms cubic-bezier(0.4,0,0.2,1)`;
-      segDisinfo.style.transition  = transitionVal;
-      segDubious.style.transition  = transitionVal;
-      segReliable.style.transition = transitionVal;
+      maskArc.style.transition = transitionVal;
       needleGroup.style.transition = `transform ${durationMs}ms cubic-bezier(0.4,0,0.2,1)`;
 
-      // ── Arcos ──────────────────────────────────────────────
-      const segs = calcSegments(score);
-
-      segDisinfo.setAttribute('stroke-dasharray',  `${segs.disinfo.filled.toFixed(2)} ${segs.disinfo.empty.toFixed(2)}`);
-      segDisinfo.setAttribute('stroke-dashoffset', segs.disinfo.offset.toFixed(2));
-
-      segDubious.setAttribute('stroke-dasharray',  `${segs.dubious.filled.toFixed(2)} ${segs.dubious.empty.toFixed(2)}`);
-      segDubious.setAttribute('stroke-dashoffset', segs.dubious.offset.toFixed(2));
-
-      segReliable.setAttribute('stroke-dasharray',  `${segs.reliable.filled.toFixed(2)} ${segs.reliable.empty.toFixed(2)}`);
-      segReliable.setAttribute('stroke-dashoffset', segs.reliable.offset.toFixed(2));
+      // ── Máscara ──────────────────────────────────────────────
+      const filled = (score / 100) * ARC_TOTAL;
+      maskArc.setAttribute('stroke-dasharray', `${filled.toFixed(2)} ${ARC_TOTAL}`);
 
       // ── Aguja ───────────────────────────────────────────────
-      // −90° = izquierda (score 0), +90° = derecha (score 100)
-      const targetAngle = -90 + (score / 100) * 180;
-      needleGroup.setAttribute('transform', `translate(130,130) rotate(${targetAngle})`);
+      // 0° = izquierda (score 0), 180° = derecha (score 100)
+      const targetAngle = (score / 100) * 180;
+      needleGroup.setAttribute('transform', `rotate(${targetAngle} 130 130)`);
     }, 60);
   });
 
   // ── Número animado ─────────────────────────────────────────
+  const scoreNum = document.getElementById('gauge-score-num');
   if (scoreNum) {
     setTimeout(() => animateNumber(scoreNum, 0, score, durationMs), 60);
   }
@@ -203,7 +137,6 @@ function animateGauge(score, durationMs = 1200) {
 
 function renderVerdict(result) {
   const badge    = document.getElementById('verdict-badge');
-  const scoreNum = document.getElementById('gauge-score-num');
 
   if (!badge) return;
 
@@ -222,6 +155,7 @@ function renderVerdict(result) {
   badge.classList.remove('gauge-badge--hidden');
 
   // Quitar clase idle del número y aplicar color del veredicto
+  const scoreNum = document.getElementById('gauge-score-num');
   if (scoreNum) {
     scoreNum.classList.remove(
       'gauge-score__num--idle',
@@ -250,22 +184,82 @@ function renderExplanation(result) {
   if (el) el.innerHTML = result.explanation;
 }
 
+function renderSummary(result) {
+  const container = document.getElementById('summary-percentages');
+  if (!container) return;
+
+  const score = result.score || 0;
+  let reliablePct = 0, dubiousPct = 0, disinfoPct = 0;
+
+  if (score >= 70) {
+    reliablePct = score;
+    dubiousPct = Math.floor((100 - score) * 0.7);
+    disinfoPct = 100 - score - dubiousPct;
+  } else if (score < 40) {
+    disinfoPct = 100 - score;
+    dubiousPct = Math.floor(score * 0.7);
+    reliablePct = score - dubiousPct;
+  } else {
+    dubiousPct = Math.max(score, 100 - score);
+    if (dubiousPct < 50) dubiousPct = 50;
+    const remainder = 100 - dubiousPct;
+    reliablePct = Math.floor(remainder / 2);
+    disinfoPct = remainder - reliablePct;
+  }
+
+  container.innerHTML = `
+    <span style="color: var(--color-reliable);">• ${reliablePct}% veracidad</span>
+    <span style="color: var(--color-text-faint);">·</span>
+    <span style="color: var(--color-dubious);">• ${dubiousPct}% dudoso</span>
+    <span style="color: var(--color-text-faint);">·</span>
+    <span style="color: var(--color-disinfo);">• ${disinfoPct}% falso</span>
+  `;
+}
+
 function renderFragments(result) {
   const container = document.getElementById('fragments-tags');
   if (!container) return;
 
-  const iconMap = {
-    'Fuente verificada': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
-    'Dato contrastado': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`
-  };
-  const defaultIcon = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  if (!result.fragments || result.fragments.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
 
-  container.innerHTML = result.fragments.map(frag => `
-    <span class="tag tag--${frag.status}" style="padding: 6px 12px; font-size: 13px;">
-      ${iconMap[frag.text] || defaultIcon}
-      ${frag.text}
-    </span>
-  `).join('');
+  let reliable = 0, dubious = 0, disinfo = 0;
+  result.fragments.forEach(frag => {
+    if (frag.status === 'reliable') reliable++;
+    else if (frag.status === 'dubious') dubious++;
+    else if (frag.status === 'disinfo') disinfo++;
+  });
+
+  const rows = [];
+  
+  if (reliable > 0) {
+    rows.push(`
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; border-left: 4px solid var(--color-reliable);">
+        <span style="font-weight: 500; color: var(--color-text);">Fragmentos veraces</span>
+        <span style="font-weight: 700; color: var(--color-reliable); font-size: 16px;">${reliable}</span>
+      </div>
+    `);
+  }
+  if (dubious > 0) {
+    rows.push(`
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(234, 179, 8, 0.1); border-radius: 8px; border-left: 4px solid var(--color-dubious);">
+        <span style="font-weight: 500; color: var(--color-text);">Fragmentos sospechosos</span>
+        <span style="font-weight: 700; color: var(--color-dubious); font-size: 16px;">${dubious}</span>
+      </div>
+    `);
+  }
+  if (disinfo > 0) {
+    rows.push(`
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border-left: 4px solid var(--color-disinfo);">
+        <span style="font-weight: 500; color: var(--color-text);">Fragmentos falsos</span>
+        <span style="font-weight: 700; color: var(--color-disinfo); font-size: 16px;">${disinfo}</span>
+      </div>
+    `);
+  }
+
+  container.innerHTML = rows.join('');
 }
 
 function initButtons(result) {
@@ -326,6 +320,7 @@ export function renderResult(result) {
   const res = result || MOCK_RESULT;
   renderVerdict(res);
   renderExplanation(res);
+  renderSummary(res);
   renderFragments(res);
   initButtons(res);
 }
