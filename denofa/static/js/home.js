@@ -5,15 +5,86 @@
 import { detectContentType } from './utils.js';
 import { runSteps } from './loading.js';
 
+/**
+ * Coordina la visualización de estados en la nueva estructura de dos columnas.
+ */
 export function showState(id) {
-  document.querySelectorAll('.state-panel').forEach(panel => {
-    panel.classList.remove('state--active');
-  });
-  const active = document.getElementById(id);
-  if (active) active.classList.add('state--active');
+  const leftCol = document.getElementById('left-column');
+  const rightGauge = document.getElementById('state-right-gauge');
+  const rightLoading = document.getElementById('state-loading');
+  const rightResultContent = document.getElementById('state-result-content');
+  
+  if (!leftCol) {
+    // Fallback para standalone pages que no tienen left-column
+    document.querySelectorAll('.state-panel').forEach(panel => panel.classList.remove('state--active'));
+    const active = document.getElementById(id);
+    if (active) active.classList.add('state--active');
+    return;
+  }
+
+  if (id === 'state-input') {
+    leftCol.classList.remove('left-column--blocked');
+    if (rightGauge) rightGauge.style.display = 'flex';
+    if (rightLoading) rightLoading.style.display = 'none';
+    if (rightResultContent) rightResultContent.style.display = 'none';
+    
+    // Ensure gauge is in idle state
+    const gaugeWrapper = document.getElementById('gauge-wrapper');
+    if (gaugeWrapper) {
+       gaugeWrapper.classList.add('gauge--idle');
+       gaugeWrapper.style.display = 'block';
+    }
+    const idleLabel = document.getElementById('gauge-idle-label');
+    if (idleLabel) idleLabel.classList.remove('gauge-idle-label--hidden');
+    const badge = document.getElementById('verdict-badge');
+    if (badge) badge.classList.add('gauge-badge--hidden');
+    
+    const scoreNum = document.getElementById('gauge-score-num');
+    if (scoreNum) {
+      scoreNum.textContent = '0';
+      scoreNum.className = 'gauge-score__num gauge-score__num--idle';
+    }
+    
+    // reset arcs and needle to 0
+    const segDisinfo  = document.getElementById('gauge-seg-disinfo');
+    const segDubious  = document.getElementById('gauge-seg-dubious');
+    const segReliable = document.getElementById('gauge-seg-reliable');
+    const needleGroup = document.getElementById('gauge-needle-group');
+    if (segDisinfo) {
+       [segDisinfo, segDubious, segReliable].forEach(el => {
+         el.style.transition = 'none';
+         el.setAttribute('stroke-dasharray', `0 345.6`);
+       });
+       if(needleGroup) {
+         needleGroup.style.transition = 'none';
+         needleGroup.setAttribute('transform', 'translate(130,130) rotate(-90)');
+       }
+    }
+  } 
+  else if (id === 'state-loading') {
+    leftCol.classList.add('left-column--blocked');
+    if (rightGauge) rightGauge.style.display = 'none'; // Ocultar gauge completo
+    if (rightLoading) rightLoading.style.display = 'flex';
+    if (rightResultContent) rightResultContent.style.display = 'none';
+  } 
+  else if (id === 'state-result') {
+    leftCol.classList.add('left-column--blocked');
+    if (rightGauge) rightGauge.style.display = 'flex'; // Mostrar gauge animado
+    if (rightLoading) rightLoading.style.display = 'none';
+    if (rightResultContent) rightResultContent.style.display = 'flex'; // Botones y fragmentos
+    
+    const gaugeWrapper = document.getElementById('gauge-wrapper');
+    if (gaugeWrapper) gaugeWrapper.style.display = 'block';
+  }
 }
 
-
+/**
+ * Pone el gauge en estado de carga visual (pulso gris).
+ * Ahora ya no hace nada porque el gauge se oculta por completo durante la carga.
+ */
+export function setGaugeLoading(on) {
+  // Ya no se necesita animación de carga en el gauge mismo.
+}
 
 function initTextarea() {
   const textarea = document.getElementById('main-textarea');
@@ -96,6 +167,7 @@ function initUploadButton() {
         textarea.dispatchEvent(new Event('input'));
       }
       showState('state-loading');
+      setGaugeLoading(true);
       runSteps('image');
     }
   });
@@ -109,6 +181,7 @@ function initAnalyzeButton() {
   btn.addEventListener('click', () => {
     const type = detectContentType(textarea.value);
     showState('state-loading');
+    setGaugeLoading(true);
     runSteps(type);
   });
 }
@@ -123,6 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initUploadButton();
     initAnalyzeButton();
     initSubtitleRotator();
+
+    // Construir tick marks del gauge en el estado idle inicial
+    if (typeof buildGaugeTicks === 'function') {
+      buildGaugeTicks();
+    }
   }
 });
 

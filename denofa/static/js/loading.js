@@ -3,9 +3,7 @@
  */
 
 
-import { showState } from './home.js';
-// We must dynamically import renderResult to avoid circular deps if needed, 
-// or just call showState('state-result') and a global renderResult.
+import { showState, setGaugeLoading } from './home.js';
 import { renderResult } from './resultado.js';
 
 const STEPS = {
@@ -152,13 +150,16 @@ export function runSteps(type) {
           return;
         }
         
-        // If SPA mode
-        if (document.getElementById('state-result')) {
+        // Quitar pulso de carga del gauge
+        setGaugeLoading(false);
+
+        // Si estamos en modo SPA (index.html)
+        if (document.getElementById('left-column')) {
           showState('state-result');
           renderResult(backendResult); // Pasar resultado del backend
         } else {
-          // Fallback if individual page
-          window.location.href = '/resultado/';
+          // Fallback si es página standalone
+          window.location.href = `/detalle/${backendResult.id}/`;
         }
       }, 600);
     }

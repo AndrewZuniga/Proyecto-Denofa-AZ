@@ -125,4 +125,6 @@ def clear_history_view(request):
     use_case.execute(session_key)
     
     return JsonResponse({'status': 'ok'})
-
+
+def resultado_view(request):
+    return render(request, 'pages/resultado.html')

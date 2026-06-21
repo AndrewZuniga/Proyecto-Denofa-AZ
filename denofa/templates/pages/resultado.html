@@ -9,16 +9,76 @@
     <div class="card">
       
       <div class="state-panel state--active">
-        <div class="verdict-section">
+        <!-- ── GAUGE / VELOCÍMETRO ─────────────────── -->
+        <div class="gauge-section">
           <span id="verdict-badge" class="badge badge--reliable">CONFIABLE</span>
-          <div class="verdict-score">
-            <span id="verdict-score-num" class="verdict-score__num verdict-score__num--reliable">0</span>
-            <span class="verdict-score__denom">/ 100</span>
-          </div>
-          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-            <div id="progress-fill" class="progress-bar__fill progress-bar__fill--reliable" style="width:0%;"></div>
+
+          <div class="gauge-wrapper" aria-label="Medidor de confiabilidad" role="img">
+            <svg id="gauge-svg" class="gauge-svg" viewBox="0 0 260 145" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <!-- ── Arco de fondo (pista gris completa) ── -->
+              <path id="gauge-track"
+                    d="M 20 130 A 110 110 0 0 1 240 130"
+                    fill="none"
+                    stroke="var(--color-border)"
+                    stroke-width="22"
+                    stroke-linecap="round"/>
+
+              <!-- ── Segmento ROJO (0–39 → 0%–39% del arco) ── -->
+              <path id="gauge-seg-disinfo"
+                    d="M 20 130 A 110 110 0 0 1 240 130"
+                    fill="none"
+                    stroke="var(--color-disinfo)"
+                    stroke-width="22"
+                    stroke-linecap="round"
+                    stroke-dasharray="0 346"
+                    stroke-dashoffset="0"/>
+
+              <!-- ── Segmento ÁMBAR (40–69 → 39%–69% del arco) ── -->
+              <path id="gauge-seg-dubious"
+                    d="M 20 130 A 110 110 0 0 1 240 130"
+                    fill="none"
+                    stroke="var(--color-dubious)"
+                    stroke-width="22"
+                    stroke-linecap="round"
+                    stroke-dasharray="0 346"
+                    stroke-dashoffset="0"/>
+
+              <!-- ── Segmento VERDE (70–100 → 69%–100% del arco) ── -->
+              <path id="gauge-seg-reliable"
+                    d="M 20 130 A 110 110 0 0 1 240 130"
+                    fill="none"
+                    stroke="var(--color-reliable)"
+                    stroke-width="22"
+                    stroke-linecap="round"
+                    stroke-dasharray="0 346"
+                    stroke-dashoffset="0"/>
+
+              <!-- ── Marcas y etiquetas de escala ── -->
+              <g id="gauge-ticks" class="gauge-ticks"></g>
+
+              <!-- ── Aguja ── -->
+              <g id="gauge-needle-group" transform="translate(130,130) rotate(-90)">
+                <!-- cuerpo de la aguja -->
+                <line id="gauge-needle"
+                      x1="0" y1="4"
+                      x2="0" y2="-88"
+                      stroke="#1e293b"
+                      stroke-width="3"
+                      stroke-linecap="round"/>
+                <!-- centro circular -->
+                <circle cx="0" cy="0" r="9" fill="#1e293b"/>
+                <circle cx="0" cy="0" r="5" fill="#ffffff"/>
+              </g>
+            </svg>
+
+            <!-- Score numérico centrado debajo de la aguja -->
+            <div class="gauge-score-display">
+              <span id="gauge-score-num" class="gauge-score__num">0</span>
+              <span class="gauge-score__label">/ 100</span>
+            </div>
           </div>
         </div>
+        <!-- ── FIN GAUGE ──────────────────────────── -->
 
         <section aria-labelledby="why-heading">
           <h3 id="why-heading" style="font-size: 15px; margin-bottom: var(--space-sm);">¿Por qué?</h3>
