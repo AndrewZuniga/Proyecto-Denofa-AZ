@@ -203,7 +203,8 @@ export function runSteps(type) {
             // Update the text of the last step to indicate finalization while keeping spinner active
             const lastStepEl = document.getElementById(`step-${steps.length - 1}`);
             if (lastStepEl) {
-              const textSpan = lastStepEl.querySelectorAll('span')[1];
+              const allSpans = lastStepEl.querySelectorAll('span');
+              const textSpan = Array.from(allSpans).find(span => !span.classList.contains('step-icon') && !span.classList.contains('spinner'));
               if (textSpan) {
                 textSpan.textContent = "Finalizando análisis...";
               }

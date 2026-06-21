@@ -38,27 +38,47 @@ function initTextarea() {
   });
 }
 
+function showImagePreview(file) {
+  const textarea = document.getElementById('main-textarea');
+  const previewWrap = document.getElementById('image-preview-wrap');
+  const previewImg = document.getElementById('image-preview');
+  const btnAnalyze = document.getElementById('btn-analyze');
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    previewImg.src = event.target.result;
+    previewWrap.style.display = 'block';
+    if (textarea) textarea.style.display = 'none';
+    btnAnalyze.disabled = false;
+    btnAnalyze.classList.remove('btn--disabled');
+  };
+  reader.readAsDataURL(file);
+  window.selectedImageFile = file;
+}
+
 function initDragAndDrop() {
   const textarea = document.getElementById('main-textarea');
-  if (!textarea) return;
+  const dropZone = document.querySelector('.card');
+  if (!textarea || !dropZone) return;
 
-  textarea.addEventListener('dragover', (e) => {
+  dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     textarea.classList.add('textarea--dragover');
   });
 
-  textarea.addEventListener('dragleave', (e) => {
+  dropZone.addEventListener('dragleave', (e) => {
     e.preventDefault();
     textarea.classList.remove('textarea--dragover');
   });
 
-  textarea.addEventListener('drop', (e) => {
+  dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     textarea.classList.remove('textarea--dragover');
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      // Handle file drop visually
-      textarea.value = `[Imagen cargada: ${e.dataTransfer.files[0].name}]`;
-      textarea.dispatchEvent(new Event('input'));
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        showImagePreview(file);
+      }
     }
   });
 }
@@ -94,17 +114,7 @@ function initUploadButton() {
 
   input.addEventListener('change', (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        previewImg.src = event.target.result;
-        previewWrap.style.display = 'block';
-        if (textarea) textarea.style.display = 'none';
-        btnAnalyze.disabled = false;
-        btnAnalyze.classList.remove('btn--disabled');
-      };
-      reader.readAsDataURL(file);
-      window.selectedImageFile = file;
+      showImagePreview(e.target.files[0]);
     }
   });
 
@@ -120,6 +130,29 @@ function initUploadButton() {
       btnAnalyze.classList.add('btn--disabled');
     });
   }
+}
+
+function initPasteImage() {
+  const card = document.querySelector('.card');
+  if (!card) return;
+
+  document.addEventListener('paste', (e) => {
+    if (!document.getElementById('state-input')?.classList.contains('state--active')) return;
+
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          showImagePreview(file);
+          e.preventDefault();
+        }
+        break;
+      }
+    }
+  });
 }
 
 function initAnalyzeButton() {
@@ -147,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initDragAndDrop();
     initPasteButton();
     initUploadButton();
+    initPasteImage();
     initAnalyzeButton();
     initSubtitleRotator();
   }

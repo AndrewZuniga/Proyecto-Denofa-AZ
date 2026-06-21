@@ -61,12 +61,20 @@ Analiza este texto:
 \"\"\"
 
 NO uses bloques de código markdown (no uses ```json ni ```). NO inventes veredictos diferentes a los 3 indicados.
+
+IMPORTANTE SOBRE LOS SNIPPETS: el campo "snippets" debe contener ÚNICAMENTE fragmentos literales copiados textualmente del TEXTO ORIGINAL proporcionado por el usuario (el que está entre las comillas triples arriba), nunca citas de artículos externos, fuentes de internet, o resultados de tu búsqueda. Cada snippet debe ser una oración o frase que SÍ aparece tal cual en el texto del usuario.
+
+Si durante tu investigación encontraste fuentes externas relevantes que respaldan o contradicen el texto, resúmelas brevemente en el campo "sources" (máximo 3 fuentes, una frase corta cada una describiendo qué encontraste y de qué tipo de fuente, sin necesidad de URL exacta).
+
+Los valores de "status" dentro de cada snippet deben ser EXACTAMENTE uno de estos 3, en minúsculas y sin acentos: "reliable", "dubious", "disinfo". Nunca uses el veredicto completo ni otras palabras.
+
 Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin bloques de código, con esta estructura exacta:
 {{
   "verdict": "CONFIABLE" | "DUDOSO" | "PROBABLE DESINFORMACIÓN",
   "score": número entero entre 0 y 100,
   "explanation": "explicación en español de máximo 120 palabras, sin términos técnicos, específica al contenido analizado",
-  "snippets": [array de 0 a 3 objetos con campos text, status y reason],
+  "snippets": [array de 0 a 3 objetos con campos text (frase literal del texto original), status (reliable|dubious|disinfo) y reason (motivo breve)],
+  "sources": [array de 0 a 3 strings cortos describiendo fuentes externas consultadas, puede estar vacío],
   "not_news": false
 }}
 
@@ -102,6 +110,17 @@ El score debe ser coherente con el veredicto: CONFIABLE=70-100, DUDOSO=40-69, PR
         elif "fragments" not in result or not isinstance(result["fragments"], list):
             result["fragments"] = []
             
+        if "sources" in result and isinstance(result["sources"], list):
+            result["sources"] = result["sources"][:3]
+        else:
+            result["sources"] = []
+
+        valid_statuses = ["reliable", "dubious", "disinfo"]
+        for fragment in result.get("fragments", []):
+            if isinstance(fragment, dict):
+                status = str(fragment.get("status", "")).lower().strip()
+                fragment["status"] = status if status in valid_statuses else "dubious"
+
         return result
 
     def extract_text_from_image(self, image_bytes: bytes, mime_type: str) -> str:
