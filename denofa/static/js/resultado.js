@@ -90,7 +90,7 @@ function buildTicks() {
 }
 
 /**
- * Anima el gauge desde 0 hasta el score final en durationMs.
+ * Anima el gauge (arco y aguja) al mismo tiempo en el mismo bucle para sincronía perfecta.
  * @param {number} score      – valor final 0-100
  * @param {number} durationMs – duración de la animación
  */
@@ -102,31 +102,29 @@ function animateGauge(score, durationMs = 1200) {
 
   // Iniciar en 0 de forma explícita
   maskArc.style.transition = 'none';
-  maskArc.setAttribute('stroke-dasharray', `0 ${ARC_TOTAL}`);
-
   needleGroup.style.transition = 'none';
-  needleGroup.setAttribute('transform', 'rotate(0 130 130)');
+  needleGroup.style.transformOrigin = '130px 130px';
+  
+  maskArc.setAttribute('stroke-dasharray', `0 ${ARC_TOTAL}`);
+  needleGroup.style.transform = 'rotate(0deg)';
 
-  // Forzar reflow para que el estado inicial sea reconocido por el navegador
+  // Forzar reflow
   void maskArc.getBoundingClientRect();
 
-  // Reactivar transición y animar al estado final
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      const transitionVal = `stroke-dasharray ${durationMs}ms cubic-bezier(0.4,0,0.2,1)`;
-      maskArc.style.transition = transitionVal;
-      needleGroup.style.transition = `transform ${durationMs}ms cubic-bezier(0.4,0,0.2,1)`;
+  const targetAngle = (score / 100) * 180;
+  const targetFilled = (score / 100) * ARC_TOTAL;
 
-      // ── Máscara ──────────────────────────────────────────────
-      const filled = (score / 100) * ARC_TOTAL;
-      maskArc.setAttribute('stroke-dasharray', `${filled.toFixed(2)} ${ARC_TOTAL}`);
+  // Pequeño delay para que el navegador procese el estado 0 inicial antes de animar
+  setTimeout(() => {
+    // Restaurar transiciones CSS fluidas
+    maskArc.style.transition = `stroke-dasharray ${durationMs}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+    needleGroup.style.transition = `transform ${durationMs}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+    needleGroup.style.transformOrigin = '130px 130px';
 
-      // ── Aguja ───────────────────────────────────────────────
-      // 0° = izquierda (score 0), 180° = derecha (score 100)
-      const targetAngle = (score / 100) * 180;
-      needleGroup.setAttribute('transform', `rotate(${targetAngle} 130 130)`);
-    }, 60);
-  });
+    // Aplicar valores finales; el navegador interpola de forma acelerada por GPU
+    needleGroup.style.transform = `rotate(${targetAngle}deg)`;
+    maskArc.setAttribute('stroke-dasharray', `${targetFilled} ${ARC_TOTAL}`);
+  }, 50);
 
   // ── Número animado ─────────────────────────────────────────
   const scoreNum = document.getElementById('gauge-score-num');
@@ -220,53 +218,44 @@ function renderFragments(result) {
   const container = document.getElementById('fragments-tags');
   if (!container) return;
 
-  if (!result.fragments || result.fragments.length === 0) {
-    container.innerHTML = '';
-    return;
-  }
-
   let reliable = 0, dubious = 0, disinfo = 0;
-  result.fragments.forEach(frag => {
-    if (frag.status === 'reliable') reliable++;
-    else if (frag.status === 'dubious') dubious++;
-    else if (frag.status === 'disinfo') disinfo++;
-  });
 
-  const rows = [];
-  
-  if (reliable > 0) {
-    rows.push(`
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; border-left: 4px solid var(--color-reliable);">
-        <span style="font-weight: 500; color: var(--color-text);">Fragmentos veraces</span>
-        <span style="font-weight: 700; color: var(--color-reliable); font-size: 16px;">${reliable}</span>
-      </div>
-    `);
-  }
-  if (dubious > 0) {
-    rows.push(`
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(234, 179, 8, 0.1); border-radius: 8px; border-left: 4px solid var(--color-dubious);">
-        <span style="font-weight: 500; color: var(--color-text);">Fragmentos sospechosos</span>
-        <span style="font-weight: 700; color: var(--color-dubious); font-size: 16px;">${dubious}</span>
-      </div>
-    `);
-  }
-  if (disinfo > 0) {
-    rows.push(`
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border-left: 4px solid var(--color-disinfo);">
-        <span style="font-weight: 500; color: var(--color-text);">Fragmentos falsos</span>
-        <span style="font-weight: 700; color: var(--color-disinfo); font-size: 16px;">${disinfo}</span>
-      </div>
-    `);
+  if (result.fragments && result.fragments.length > 0) {
+    result.fragments.forEach(frag => {
+      if (frag.status === 'reliable') reliable++;
+      else if (frag.status === 'dubious') dubious++;
+      else if (frag.status === 'disinfo') disinfo++;
+    });
   }
 
-  container.innerHTML = rows.join('');
+  // Siempre mostrar las 3 filas, con opacidad reducida si es 0
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(34, 197, 94, ${reliable > 0 ? '0.1' : '0.05'}); border-radius: 8px; border-left: 4px solid var(--color-reliable); ${reliable === 0 ? 'opacity: 0.5;' : ''}">
+      <span style="font-weight: 500; color: var(--color-text);">Fragmentos veraces</span>
+      <span style="font-weight: 700; color: var(--color-reliable); font-size: 16px;">${reliable}</span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(234, 179, 8, ${dubious > 0 ? '0.1' : '0.05'}); border-radius: 8px; border-left: 4px solid var(--color-dubious); ${dubious === 0 ? 'opacity: 0.5;' : ''}">
+      <span style="font-weight: 500; color: var(--color-text);">Fragmentos sospechosos</span>
+      <span style="font-weight: 700; color: var(--color-dubious); font-size: 16px;">${dubious}</span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(239, 68, 68, ${disinfo > 0 ? '0.1' : '0.05'}); border-radius: 8px; border-left: 4px solid var(--color-disinfo); ${disinfo === 0 ? 'opacity: 0.5;' : ''}">
+      <span style="font-weight: 500; color: var(--color-text);">Fragmentos falsos</span>
+      <span style="font-weight: 700; color: var(--color-disinfo); font-size: 16px;">${disinfo}</span>
+    </div>
+  `;
 }
 
-function initButtons(result) {
-  const btnNew   = document.getElementById('btn-nueva-consulta');
-  const btnShare = document.getElementById('btn-share');
-  const btnSave  = document.getElementById('btn-save');
-  const textarea = document.getElementById('main-textarea');
+let latestResult = null;
+let buttonsInitialized = false;
+
+function initButtons() {
+  if (buttonsInitialized) return;
+  buttonsInitialized = true;
+
+  const btnNew    = document.getElementById('btn-nueva-consulta');
+  const btnDetalle = document.getElementById('btn-ver-detalle');
+  const btnSave   = document.getElementById('btn-save');
+  const textarea  = document.getElementById('main-textarea');
 
   if (btnNew) {
     btnNew.addEventListener('click', () => {
@@ -282,53 +271,63 @@ function initButtons(result) {
     });
   }
 
-  if (btnShare) {
-    btnShare.addEventListener('click', () => {
-      if (navigator.share) {
-        navigator.share({
-          title: 'Verificación DenoFA',
-          text: `Veredicto: ${result.verdict} (${result.score}/100)`,
-          url: window.location.href
-        }).catch(console.error);
-      } else {
-        navigator.clipboard.writeText(window.location.href)
-          .then(() => alert('Enlace copiado al portapapeles'))
-          .catch(console.error);
-      }
+  if (btnDetalle) {
+    btnDetalle.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!latestResult) return;
+      sessionStorage.setItem('currentAnalysisId', latestResult.id);
+      sessionStorage.setItem('returnUrl', window.location.pathname);
+      window.location.href = `/detalle/${latestResult.id}/`;
     });
   }
 
   if (btnSave) {
     btnSave.addEventListener('click', () => {
-      saveToHistory(result);
-      alert('Resultado guardado en el historial');
-    });
-  }
+      if (!latestResult || btnSave.disabled) return;
 
-  const btnDetalle = document.getElementById('btn-ver-detalle');
-  if (btnDetalle) {
-    btnDetalle.addEventListener('click', (e) => {
-      e.preventDefault();
-      sessionStorage.setItem('currentAnalysisId', result.id);
-      sessionStorage.setItem('returnUrl', window.location.pathname);
-      window.location.href = `/detalle/${result.id}/`;
+      // Guardar en historial
+      saveToHistory(latestResult);
+
+      // Transición visual: verde + ícono check + texto "Guardado" + bloqueado
+      btnSave.classList.add('btn--saved');
+      btnSave.disabled = true;
+      btnSave.style.transition = 'all 0.3s ease';
+      btnSave.style.color = 'var(--color-reliable)';
+      btnSave.style.borderColor = 'var(--color-reliable)';
+      btnSave.style.opacity = '1';
+      btnSave.style.cursor = 'default';
+      btnSave.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span style="font-size: 14px; font-weight: 500;">Guardado</span>
+      `;
     });
   }
 }
 
 export function renderResult(result) {
   const res = result || MOCK_RESULT;
+  latestResult = res;
+
+  // Mostrar los botones de acción (estaban ocultos en estado inicial)
+  const resultActions = document.getElementById('result-actions');
+  if (resultActions) {
+    resultActions.style.display = 'flex';
+  }
+
   renderVerdict(res);
   renderExplanation(res);
   renderSummary(res);
   renderFragments(res);
-  initButtons(res);
+  initButtons();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // En index.html: inicializar tick marks del gauge idle (gauge-column está siempre visible)
+  // En index.html: inicializar tick marks del gauge idle y configurar event listeners de botones
   if (document.getElementById('gauge-column')) {
     buildTicks();
+    initButtons();
   }
 
   // En resultado.html (página standalone, sin left-column de la SPA):

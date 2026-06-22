@@ -37,9 +37,16 @@ def history_view(request):
     # Serializar el historial a un formato compatible con historial.js
     analyses_list = []
     for item in analyses:
+        try:
+            snippets = json.loads(item.snippets_json) if item.snippets_json else []
+        except:
+            snippets = []
+            
         analyses_list.append({
             'id': item.id,
             'verdict': item.verdict,  # 'CONFIABLE', etc.
+            'score': item.score,
+            'snippets': snippets,
             'date': item.created_at.isoformat(),
             'excerpt': item.original_content[:70] + ('...' if len(item.original_content) > 70 else '')
         })
