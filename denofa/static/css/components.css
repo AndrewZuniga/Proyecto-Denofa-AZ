@@ -371,6 +371,84 @@
   color: var(--color-text-faint);
 }
 
+/* ── GAUGE / VELOCÍMETRO ────────────────
+   Medidor semicircular tipo velocímetro.
+──────────────────────────────────────── */
+.gauge-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.gauge-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.gauge-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+}
+
+/* Transición suave en los arcos SVG */
+#gauge-seg-disinfo,
+#gauge-seg-dubious,
+#gauge-seg-reliable {
+  transition: stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Transición suave en la aguja (manejada por JS para evitar bugs de origen en CSS) */
+#gauge-needle-group {
+  /* transition y transform-origin delegados a animaciones JS */
+}
+
+/* Etiquetas de escala dentro del SVG */
+.gauge-ticks text {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  fill: var(--color-text-faint);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Score numérico bajo el arco — pegado a la base de la curva */
+.gauge-score-display {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  justify-content: center;
+  margin-top: -52px;
+}
+
+.gauge-score__num {
+  font-size: var(--font-size-score);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  transition: color var(--transition-slow);
+}
+
+.gauge-score__label {
+  font-size: var(--font-size-h3);
+  color: var(--color-text-faint);
+}
+
+/* Colores del número de score según veredicto */
+.gauge-score__num--reliable { color: var(--color-reliable); }
+.gauge-score__num--dubious  { color: var(--color-dubious);  }
+.gauge-score__num--disinfo  { color: var(--color-disinfo);  }
+
+@media (max-width: 480px) {
+  .gauge-wrapper {
+    max-width: 240px;
+  }
+}
+
 .explanation-text {
   font-family: var(--font-serif);
   font-size: var(--font-size-body);
@@ -684,5 +762,118 @@ h1 + .subtitle-rotator,
   }
   .stats-row__label {
     font-size: var(--font-size-xs);
+  }
+}
+
+/* ── TWO COLUMN LAYOUT (INDEX) ────────── */
+.layout-two-columns {
+  display: grid;
+  /* móvil: una sola columna */
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+  max-width: var(--max-width-page) !important;
+}
+
+/* Bloqueo visual de la columna izquierda durante análisis */
+.left-column--blocked {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity var(--transition-slow);
+}
+
+/* ── GAUGE COLUMN (col der permanente) ── */
+.gauge-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  /* En móvil se ordena después de los estados de la col izq */
+  order: 10;
+}
+
+/* Ocultar badge en estado idle */
+.gauge-badge--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Estado idle: aguja y arcos en escala de grises */
+.gauge--idle #gauge-seg-disinfo,
+.gauge--idle #gauge-seg-dubious,
+.gauge--idle #gauge-seg-reliable {
+  stroke: var(--color-border);
+}
+
+/* Estado idle: aguja aparece con opacidad reducida */
+.gauge--idle #gauge-needle-group {
+  opacity: 0.3;
+}
+
+/* Color del número en idle */
+.gauge-score__num--idle {
+  color: var(--color-text-faint);
+}
+
+/* Etiqueta descriptiva en estado idle */
+.gauge-idle-label {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-faint);
+  text-align: center;
+  max-width: 200px;
+  line-height: var(--line-height-read);
+  transition: opacity var(--transition-slow);
+}
+
+/* Ocultar etiqueta idle cuando ya hay resultado */
+.gauge-idle-label--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* (Gauge animation removed as gauge hides entirely in loading) */
+
+/* ── Desktop: 2 columnas reales ──────── */
+@media (min-width: 1024px) {
+  .layout-two-columns {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    height: 680px;
+    gap: 0;
+  }
+
+  /* La col derecha (gauge) siempre ocupa la segunda celda del grid,
+     independientemente de qué estado esté activo en la col izq */
+  .gauge-column {
+    order: unset;
+    /* Forzar a que siempre esté en la col 2, fila 1 */
+    grid-column: 2;
+    grid-row: 1;
+    /* Alinear verticalmente al centro de la col izq */
+    justify-self: center;
+    width: 100%;
+    height: 100%;
+    padding-left: var(--space-xl);
+    justify-content: flex-start;
+  }
+
+  .gauge-column .sub-state {
+    max-height: 100%;
+    overflow-y: auto;
+    padding-right: var(--space-xs);
+  }
+
+  #state-right-gauge {
+    padding-top: var(--space-lg);
+  }
+
+  /* En desktop, la col izq está en celda 1 */
+  .left-column {
+    grid-column: 1;
+    grid-row: 1;
+    height: 100%;
+    border-right: 1px solid var(--color-border);
+    padding-right: var(--space-xl);
   }
 }

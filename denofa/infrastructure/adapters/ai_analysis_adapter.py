@@ -105,10 +105,8 @@ El score debe ser coherente con el veredicto: CONFIABLE=70-100, DUDOSO=40-69, PR
             result["verdict"] = CredibilityDomainService.get_verdict_by_score(result["score"])
         result["explanation"] = str(result["explanation"])
         
-        if "snippets" in result and isinstance(result["snippets"], list):
-            result["fragments"] = result["snippets"]
-        elif "fragments" not in result or not isinstance(result["fragments"], list):
-            result["fragments"] = []
+        if "snippets" not in result or not isinstance(result.get("snippets"), list):
+            result["snippets"] = []
             
         if "sources" in result and isinstance(result["sources"], list):
             result["sources"] = result["sources"][:3]
@@ -116,7 +114,7 @@ El score debe ser coherente con el veredicto: CONFIABLE=70-100, DUDOSO=40-69, PR
             result["sources"] = []
 
         valid_statuses = ["reliable", "dubious", "disinfo"]
-        for fragment in result.get("fragments", []):
+        for fragment in result.get("snippets", []):
             if isinstance(fragment, dict):
                 status = str(fragment.get("status", "")).lower().strip()
                 fragment["status"] = status if status in valid_statuses else "dubious"
