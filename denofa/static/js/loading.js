@@ -95,38 +95,92 @@ export function runSteps(type) {
   renderSteps(steps);
 
   let currentStep = 0;
+  let isFetchDone = false;
+  let isAnimationDone = false;
   let backendResult = null;
   let backendError = null;
 
   // Disparar llamada al backend inmediatamente
   const textValue = document.getElementById('main-textarea')?.value || '';
-  
+
   // Obtener el token CSRF de las cookies de Django
   const csrfToken = document.cookie
     .split('; ')
     .find(row => row.startsWith('csrftoken='))
     ?.split('=')[1] || '';
 
-  fetch('/analyze/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken
-    },
-    body: JSON.stringify({ text: textValue })
-  })
-  .then(res => {
-    if (!res.ok) {
-      return res.json().then(err => { throw new Error(err.error || 'Error al analizar'); });
+  let fetchPromise;
+
+  if (window.selectedImageFile) {
+    const formData = new FormData();
+    formData.append('image', window.selectedImageFile);
+    fetchPromise = fetch('/analyze/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken
+      },
+      body: formData
+    });
+  } else {
+    fetchPromise = fetch('/analyze/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({ text: textValue })
+    });
+  }
+
+  fetchPromise
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => { throw new Error(err.error || 'Error al analizar'); });
+      }
+      return res.json();
+    })
+    .then(data => {
+      backendResult = data;
+      isFetchDone = true;
+      if (isAnimationDone) {
+        handleFinishedAnalysis();
+      }
+    })
+    .catch(err => {
+      backendError = err.message;
+      isFetchDone = true;
+      if (isAnimationDone) {
+        handleFinishedAnalysis();
+      }
+    });
+
+  let hasHandledAnalysis = false;
+  function handleFinishedAnalysis() {
+    if (hasHandledAnalysis) return;
+    hasHandledAnalysis = true;
+
+    if (backendError) {
+      alert(backendError);
+      showState('state-input');
+      return;
     }
-    return res.json();
-  })
-  .then(data => {
-    backendResult = data;
-  })
-  .catch(err => {
-    backendError = err.message;
-  });
+
+    // Mark final step as done
+    if (steps.length > 0) {
+      markStepDone(steps.length - 1);
+    }
+
+    setTimeout(() => {
+      // If SPA mode (index.html with gauge-column)
+      if (document.getElementById('gauge-column')) {
+        renderResult(backendResult);
+        showState('state-result');
+      } else {
+        // Fallback if individual page
+        window.location.href = '/';
+      }
+    }, 600);
+  }
 
   function nextStep() {
     if (currentStep > 0) {
@@ -140,28 +194,28 @@ export function runSteps(type) {
         delay = 1000; // Exact 4 seconds total (4 steps * 1000ms)
       }
       currentStep++;
-      setTimeout(nextStep, delay);
-    } else {
-      // Done
-      setTimeout(() => {
-        if (backendError) {
-          alert(backendError);
-          showState('state-input');
-          return;
-        }
-        
-        // Quitar pulso de carga del gauge
-        setGaugeLoading(false);
 
-        // Si estamos en modo SPA (index.html)
-        if (document.getElementById('left-column')) {
-          showState('state-result');
-          renderResult(backendResult); // Pasar resultado del backend
-        } else {
-          // Fallback si es página standalone
-          window.location.href = `/detalle/${backendResult.id}/`;
-        }
-      }, 600);
+      // If this is the last step, we hold and wait for the fetch to resolve
+      if (currentStep === steps.length) {
+        setTimeout(() => {
+          isAnimationDone = true;
+          if (isFetchDone) {
+            handleFinishedAnalysis();
+          } else {
+            // Update the text of the last step to indicate finalization while keeping spinner active
+            const lastStepEl = document.getElementById(`step-${steps.length - 1}`);
+            if (lastStepEl) {
+              const allSpans = lastStepEl.querySelectorAll('span');
+              const textSpan = Array.from(allSpans).find(span => !span.classList.contains('step-icon') && !span.classList.contains('spinner'));
+              if (textSpan) {
+                textSpan.textContent = "Finalizando análisis...";
+              }
+            }
+          }
+        }, delay);
+      } else {
+        setTimeout(nextStep, delay);
+      }
     }
   }
 
@@ -173,7 +227,7 @@ export function runSteps(type) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  
+
   // If it's the standalone loading page, inject navbar/footer and run steps automatically
   if (document.getElementById('steps-list') && !document.getElementById('state-loading')) {
     runSteps(getPageType());

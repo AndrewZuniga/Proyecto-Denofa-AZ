@@ -147,27 +147,45 @@ function initTextarea() {
   });
 }
 
+function showImagePreview(file) {
+  const previewWrap = document.getElementById('image-preview-wrap');
+  const previewImg = document.getElementById('image-preview');
+  const btnAnalyze = document.getElementById('btn-analyze');
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    previewImg.src = event.target.result;
+    previewWrap.style.display = 'block';
+    btnAnalyze.disabled = false;
+    btnAnalyze.classList.remove('btn--disabled');
+  };
+  reader.readAsDataURL(file);
+  window.selectedImageFile = file;
+}
+
 function initDragAndDrop() {
   const textarea = document.getElementById('main-textarea');
-  if (!textarea) return;
+  const dropZone = document.querySelector('.card');
+  if (!textarea || !dropZone) return;
 
-  textarea.addEventListener('dragover', (e) => {
+  dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     textarea.classList.add('textarea--dragover');
   });
 
-  textarea.addEventListener('dragleave', (e) => {
+  dropZone.addEventListener('dragleave', (e) => {
     e.preventDefault();
     textarea.classList.remove('textarea--dragover');
   });
 
-  textarea.addEventListener('drop', (e) => {
+  dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     textarea.classList.remove('textarea--dragover');
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      // Handle file drop visually
-      textarea.value = `[Imagen cargada: ${e.dataTransfer.files[0].name}]`;
-      textarea.dispatchEvent(new Event('input'));
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        showImagePreview(file);
+      }
     }
   });
 }
@@ -192,6 +210,9 @@ function initUploadButton() {
   const btn = document.getElementById('btn-upload');
   const input = document.getElementById('file-input');
   const textarea = document.getElementById('main-textarea');
+  const previewWrap = document.getElementById('image-preview-wrap');
+  const previewImg = document.getElementById('image-preview');
+  const btnAnalyze = document.getElementById('btn-analyze');
   if (!btn || !input) return;
 
   btn.addEventListener('click', () => {
@@ -200,13 +221,43 @@ function initUploadButton() {
 
   input.addEventListener('change', (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      if (textarea) {
-        textarea.value = `[Imagen cargada: ${e.target.files[0].name}]`;
-        textarea.dispatchEvent(new Event('input'));
+      showImagePreview(e.target.files[0]);
+    }
+  });
+
+  const btnRemove = document.getElementById('btn-remove-image');
+  if (btnRemove) {
+    btnRemove.addEventListener('click', () => {
+      previewWrap.style.display = 'none';
+      previewImg.src = '';
+      window.selectedImageFile = null;
+      input.value = '';
+      btnAnalyze.disabled = true;
+      btnAnalyze.classList.add('btn--disabled');
+    });
+  }
+}
+
+function initPasteImage() {
+  const card = document.querySelector('.card');
+  if (!card) return;
+
+  document.addEventListener('paste', (e) => {
+    if (!document.getElementById('state-input')?.classList.contains('state--active')) return;
+
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          showImagePreview(file);
+          e.preventDefault();
+        }
+        break;
       }
-      showState('state-loading');
-      setGaugeLoading(true);
-      runSteps('image');
+
     }
   });
 }
@@ -217,39 +268,43 @@ function initAnalyzeButton() {
   if (!btn || !textarea) return;
 
   btn.addEventListener('click', () => {
-    const val = textarea.value.trim();
-    const isImage = val.startsWith('[Imagen cargada:');
-    const validationMsg = document.getElementById('input-validation-msg');
-    
-    // Validaciones
-    if (!isImage) {
+    if (window.selectedImageFile) {
+      btn.disabled = true;
+      btn.classList.add('btn--disabled');
+      showState('state-loading');
+      runSteps('image');
+    } else {
+      const val = textarea.value.trim();
+      const validationMsg = document.getElementById('input-validation-msg');
+
       if (val.length < 20 && !/^https?:\/\//i.test(val)) {
         if (validationMsg) {
           validationMsg.textContent = "Caracteres insuficientes. Mínimo 20 caracteres.";
-          validationMsg.style.color = "var(--color-disinfo)"; // Rojo
+          validationMsg.style.color = "var(--color-disinfo)";
         }
         return;
       }
-      
+
       const socialRegex = /(facebook\.com|twitter\.com|x\.com|instagram\.com|tiktok\.com|youtube\.com|linkedin\.com)/i;
       if (/^https?:\/\//i.test(val) && socialRegex.test(val)) {
         if (validationMsg) {
           validationMsg.textContent = "Formato no válido. No se admiten URLs de redes sociales.";
-          validationMsg.style.color = "var(--color-disinfo)"; // Rojo
+          validationMsg.style.color = "var(--color-disinfo)";
         }
         return;
       }
-    }
 
-    if (validationMsg) {
-      validationMsg.textContent = "Mínimo 20 caracteres. No se admiten URLs de redes sociales, usa la opción de imagen.";
-      validationMsg.style.color = "var(--color-text-faint)";
-    }
+      if (validationMsg) {
+        validationMsg.textContent = "Mínimo 20 caracteres. No se admiten URLs de redes sociales, usa la opción de imagen.";
+        validationMsg.style.color = "var(--color-text-faint)";
+      }
 
-    const type = detectContentType(val);
-    showState('state-loading');
-    setGaugeLoading(true);
-    runSteps(type);
+      btn.disabled = true;
+      btn.classList.add('btn--disabled');
+      const type = detectContentType(val);
+      showState('state-loading');
+      runSteps(type);
+    }
   });
 }
 
@@ -261,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initDragAndDrop();
     initPasteButton();
     initUploadButton();
+    initPasteImage();
     initAnalyzeButton();
     initSubtitleRotator();
 

@@ -48,8 +48,13 @@
       <!-- ══ COLUMNA IZQUIERDA: Formulario ══════════════════ -->
       <div id="left-column" class="left-column" style="display: flex; flex-direction: column;">
         <div id="state-input" class="state-panel state--active" style="display: flex; flex-direction: column; gap: var(--space-md); flex: 1;">
-          <div class="textarea-wrap" style="display: flex; flex-direction: column; flex: 1;">
+          <div class="textarea-wrap" style="display: flex; flex-direction: column; flex: 1; position: relative;">
             <textarea id="main-textarea" class="textarea" placeholder="Pega aquí el texto de la noticia, un enlace web o sube una captura de pantalla..." maxlength="5000" aria-label="Contenido a verificar" style="flex: 1; min-height: 0; resize: none;"></textarea>
+            <!-- Preview de imagen: se superpone al textarea cuando hay imagen -->
+            <div id="image-preview-wrap" style="display:none; position:absolute; inset:0; border-radius: inherit; overflow:hidden; background: var(--color-surface);">
+              <img id="image-preview" src="" alt="Vista previa de la imagen" style="width:100%; height:100%; object-fit:contain; display:block;">
+              <button id="btn-remove-image" type="button" aria-label="Quitar imagen" style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.55); color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center;">×</button>
+            </div>
             <span id="char-counter" class="char-counter" aria-live="polite">0 / 5000</span>
           </div>
 
@@ -79,6 +84,7 @@
 
           <input type="file" id="file-input" accept="image/*" style="display:none;" aria-hidden="true">
         </div>
+
       </div>
 
       <!-- ══ COLUMNA DERECHA: Estados (Gauge, Loading, Result) ════════════════ -->
@@ -193,13 +199,103 @@
       </div><!-- /#gauge-column -->
 
     </div>
+
+<section id="que-es-denofa" class="container" style="padding: var(--space-2xl) 0; max-width: var(--max-width-card); margin: 0 auto;">
+
+  <h2 style="font-family: var(--font-display); font-size: var(--font-size-h2); text-align: center; margin-bottom: var(--space-xl);">
+    ¿Cómo funciona DenoFA?
+  </h2>
+
+  <!-- Bloque 1: 3 pasos -->
+  <div style="display: flex; flex-direction: column; gap: var(--space-lg); margin-bottom: var(--space-2xl);">
+
+    <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+      <span style="flex-shrink:0; width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: white; display:flex; align-items:center; justify-content:center; font-weight: var(--font-weight-semibold);">1</span>
+      <div>
+        <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-xs);">Pega tu texto, una URL o sube una imagen</h3>
+        <p style="color: var(--color-text-secondary); font-size: var(--font-size-body);">
+          Copia el texto de una noticia, pega el enlace de un artículo web, o sube una captura de pantalla. DenoFA acepta los tres formatos y extrae el contenido automáticamente.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+      <span style="flex-shrink:0; width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: white; display:flex; align-items:center; justify-content:center; font-weight: var(--font-weight-semibold);">2</span>
+      <div>
+        <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-xs);">La IA analiza el contenido en profundidad</h3>
+        <p style="color: var(--color-text-secondary); font-size: var(--font-size-body);">
+          Nuestro sistema evalúa el lenguaje, busca fuentes verificables en internet y contrasta las afirmaciones con información real, detectando patrones como tono alarmista, falta de fuentes o afirmaciones inverificables.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+      <span style="flex-shrink:0; width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: white; display:flex; align-items:center; justify-content:center; font-weight: var(--font-weight-semibold);">3</span>
+      <div>
+        <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-xs);">Recibe tu resultado con score y evidencia</h3>
+        <p style="color: var(--color-text-secondary); font-size: var(--font-size-body);">
+          Obtén un puntaje de credibilidad del 0 al 100, un veredicto claro (Confiable, Dudoso o Probable Desinformación), y los fragmentos específicos del texto que motivaron esa conclusión.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bloque 2: Ejemplo visual de fragmentos resaltados -->
+  <div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-2xl);">
+    <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-md);">Así marcamos el contenido sospechoso</h3>
+    <p style="font-size: var(--font-size-body); line-height: 1.7; color: var(--color-text-secondary);">
+      "Un científico independiente asegura haber descubierto energía infinita usando solo imanes,
+      <span style="background: color-mix(in srgb, var(--color-disinfo) 20%, transparent); color: var(--color-disinfo); font-weight: var(--font-weight-semibold); padding: 2px 4px; border-radius: 4px;">sin citar ninguna fuente verificable</span>.
+      La noticia
+      <span style="background: color-mix(in srgb, var(--color-dubious) 20%, transparent); color: var(--color-dubious); font-weight: var(--font-weight-semibold); padding: 2px 4px; border-radius: 4px;">circula únicamente en redes sociales</span>,
+      mientras que estudios reconocidos confirman que esto
+      <span style="background: color-mix(in srgb, var(--color-disinfo) 20%, transparent); color: var(--color-disinfo); font-weight: var(--font-weight-semibold); padding: 2px 4px; border-radius: 4px;">viola las leyes de la termodinámica</span>."
+    </p>
+    <div style="display:flex; gap: var(--space-lg); margin-top: var(--space-md); flex-wrap: wrap;">
+      <span style="display:flex; align-items:center; gap:6px; font-size: var(--font-size-label);">
+        <span style="width:10px; height:10px; border-radius:50%; background: var(--color-disinfo); display:inline-block;"></span>
+        Probable desinformación
+      </span>
+      <span style="display:flex; align-items:center; gap:6px; font-size: var(--font-size-label);">
+        <span style="width:10px; height:10px; border-radius:50%; background: var(--color-dubious); display:inline-block;"></span>
+        Dudoso
+      </span>
+      <span style="display:flex; align-items:center; gap:6px; font-size: var(--font-size-label);">
+        <span style="width:10px; height:10px; border-radius:50%; background: var(--color-reliable); display:inline-block;"></span>
+        Confiable
+      </span>
+    </div>
+  </div>
+
+  <!-- Bloque 3: Leyenda del score -->
+  <div class="card" style="padding: var(--space-xl);">
+    <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-md);">¿Qué significa el puntaje?</h3>
+    <div style="display:flex; flex-direction: column; gap: var(--space-sm);">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border);">
+        <span class="verdict-pill verdict-pill--reliable">Confiable</span>
+        <span style="font-size: var(--font-size-label); color: var(--color-text-secondary);">70 – 100 puntos</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border);">
+        <span class="verdict-pill verdict-pill--dubious">Dudoso</span>
+        <span style="font-size: var(--font-size-label); color: var(--color-text-secondary);">40 – 69 puntos</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0;">
+        <span class="verdict-pill verdict-pill--disinfo">Probable Desinformación</span>
+        <span style="font-size: var(--font-size-label); color: var(--color-text-secondary);">0 – 39 puntos</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
   </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
-<script type="module" src="{% static 'js/utils.js' %}?v=14"></script>
-<script type="module" src="{% static 'js/loading.js' %}?v=14"></script>
-<script type="module" src="{% static 'js/resultado.js' %}?v=14"></script>
-<script type="module" src="{% static 'js/home.js' %}?v=14"></script>
+<script type="module" src="{% static 'js/utils.js' %}?v=17"></script>
+<script type="module" src="{% static 'js/loading.js' %}?v=17"></script>
+<script type="module" src="{% static 'js/resultado.js' %}?v=17"></script>
+<script type="module" src="{% static 'js/home.js' %}?v=17"></script>
 {% endblock %}

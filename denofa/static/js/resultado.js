@@ -6,18 +6,7 @@
 import { animateNumber, saveToHistory } from './utils.js';
 import { showState } from './home.js';
 
-const MOCK_RESULT = {
-  id: Date.now(),
-  verdict: 'CONFIABLE',
-  score: 87,
-  explanation: 'El reciente reporte sobre la implementación de <mark class="highlight--green">nuevas energías renovables en el país</mark> muestra una <mark class="highlight--yellow">ligera discrepancia</mark> en las fechas estimadas de finalización, pero los datos duros sobre la <mark class="highlight--green">inversión y el ahorro proyectado</mark> son completamente precisos y coinciden con los <mark class="highlight--green">registros oficiales del ministerio de energía.</mark>',
-  fragments: [
-    { text: 'Fuente verificada', status: 'reliable' },
-    { text: 'Dato contrastado', status: 'reliable' }
-  ],
-  date: new Date().toISOString(),
-  excerpt: 'El reciente reporte sobre la implementación de nuevas energías renovables...'
-};
+
 
 const VERDICT_CONFIG = {
   'CONFIABLE': {
@@ -52,7 +41,7 @@ const VERDICT_CONFIG = {
                    a +90° (score 100, extremo derecho).
    Fórmula: ángulo = −90 + (score / 100) × 180
 ────────────────────────────────────────────────────────────── */
-const ARC_TOTAL   = 345.6;   // longitud total del semicírculo (π × 110)
+const ARC_TOTAL = 345.6;   // longitud total del semicírculo (π × 110)
 const DISINFO_END = 0.39;    // 0–39 ocupa el 39 % del arco
 const DUBIOUS_END = 0.69;    // 40–69 llega hasta el 69 % del arco
 
@@ -94,47 +83,31 @@ function buildTicks() {
  * @param {number} score      – valor final 0-100
  * @param {number} durationMs – duración de la animación
  */
-function animateGauge(score, durationMs = 1200) {
+function animateGauge(score) {
   const maskArc = document.getElementById('gauge-mask-arc');
   const needleGroup = document.getElementById('gauge-needle-group');
+  const scoreNum = document.getElementById('gauge-score-num');
 
   if (!maskArc || !needleGroup) return;
-
-  // Iniciar en 0 de forma explícita
-  maskArc.style.transition = 'none';
-  needleGroup.style.transition = 'none';
-  needleGroup.style.transformOrigin = '130px 130px';
-  
-  maskArc.setAttribute('stroke-dasharray', `0 ${ARC_TOTAL}`);
-  needleGroup.style.transform = 'rotate(0deg)';
-
-  // Forzar reflow
-  void maskArc.getBoundingClientRect();
 
   const targetAngle = (score / 100) * 180;
   const targetFilled = (score / 100) * ARC_TOTAL;
 
-  // Pequeño delay para que el navegador procese el estado 0 inicial antes de animar
-  setTimeout(() => {
-    // Restaurar transiciones CSS fluidas
-    maskArc.style.transition = `stroke-dasharray ${durationMs}ms cubic-bezier(0.4, 0, 0.2, 1)`;
-    needleGroup.style.transition = `transform ${durationMs}ms cubic-bezier(0.4, 0, 0.2, 1)`;
-    needleGroup.style.transformOrigin = '130px 130px';
+  // Aplicar valores inmediatamente sin animación de 0
+  maskArc.style.transition = 'none';
+  needleGroup.style.transition = 'none';
+  needleGroup.style.transformOrigin = '130px 130px';
 
-    // Aplicar valores finales; el navegador interpola de forma acelerada por GPU
-    needleGroup.style.transform = `rotate(${targetAngle}deg)`;
-    maskArc.setAttribute('stroke-dasharray', `${targetFilled} ${ARC_TOTAL}`);
-  }, 50);
+  needleGroup.style.transform = `rotate(${targetAngle}deg)`;
+  maskArc.setAttribute('stroke-dasharray', `${targetFilled} ${ARC_TOTAL}`);
 
-  // ── Número animado ─────────────────────────────────────────
-  const scoreNum = document.getElementById('gauge-score-num');
   if (scoreNum) {
-    setTimeout(() => animateNumber(scoreNum, 0, score, durationMs), 60);
+    scoreNum.textContent = score;
   }
 }
 
 function renderVerdict(result) {
-  const badge    = document.getElementById('verdict-badge');
+  const badge = document.getElementById('verdict-badge');
 
   if (!badge) return;
 
@@ -173,8 +146,8 @@ function renderVerdict(result) {
   // Construir tick marks (idempotente)
   buildTicks();
 
-  // Animar el gauge
-  animateGauge(result.score, 1200);
+  // Mostrar score de inmediato
+  animateGauge(result.score);
 }
 
 function renderExplanation(result) {
@@ -186,23 +159,26 @@ function renderSummary(result) {
   const container = document.getElementById('summary-percentages');
   if (!container) return;
 
-  const score = result.score || 0;
+  let reliableCount = 0;
+  let dubiousCount = 0;
+  let disinfoCount = 0;
+
+  if (result.snippets && result.snippets.length > 0) {
+    result.snippets.forEach(frag => {
+      if (frag.status === 'reliable') reliableCount++;
+      else if (frag.status === 'dubious') dubiousCount++;
+      else if (frag.status === 'disinfo') disinfoCount++;
+    });
+  }
+
+  const total = reliableCount + dubiousCount + disinfoCount;
+
   let reliablePct = 0, dubiousPct = 0, disinfoPct = 0;
 
-  if (score >= 70) {
-    reliablePct = score;
-    dubiousPct = Math.floor((100 - score) * 0.7);
-    disinfoPct = 100 - score - dubiousPct;
-  } else if (score < 40) {
-    disinfoPct = 100 - score;
-    dubiousPct = Math.floor(score * 0.7);
-    reliablePct = score - dubiousPct;
-  } else {
-    dubiousPct = Math.max(score, 100 - score);
-    if (dubiousPct < 50) dubiousPct = 50;
-    const remainder = 100 - dubiousPct;
-    reliablePct = Math.floor(remainder / 2);
-    disinfoPct = remainder - reliablePct;
+  if (total > 0) {
+    reliablePct = Math.round((reliableCount / total) * 100);
+    dubiousPct = Math.round((dubiousCount / total) * 100);
+    disinfoPct = Math.round((disinfoCount / total) * 100);
   }
 
   container.innerHTML = `
@@ -220,8 +196,8 @@ function renderFragments(result) {
 
   let reliable = 0, dubious = 0, disinfo = 0;
 
-  if (result.fragments && result.fragments.length > 0) {
-    result.fragments.forEach(frag => {
+  if (result.snippets && result.snippets.length > 0) {
+    result.snippets.forEach(frag => {
       if (frag.status === 'reliable') reliable++;
       else if (frag.status === 'dubious') dubious++;
       else if (frag.status === 'disinfo') disinfo++;
@@ -252,10 +228,10 @@ function initButtons() {
   if (buttonsInitialized) return;
   buttonsInitialized = true;
 
-  const btnNew    = document.getElementById('btn-nueva-consulta');
+  const btnNew = document.getElementById('btn-nueva-consulta');
   const btnDetalle = document.getElementById('btn-ver-detalle');
-  const btnSave   = document.getElementById('btn-save');
-  const textarea  = document.getElementById('main-textarea');
+  const btnSave = document.getElementById('btn-save');
+  const textarea = document.getElementById('main-textarea');
 
   if (btnNew) {
     btnNew.addEventListener('click', () => {
@@ -307,19 +283,26 @@ function initButtons() {
 }
 
 export function renderResult(result) {
-  const res = result || MOCK_RESULT;
-  latestResult = res;
+  if (!result) {
+    const explanationText = document.getElementById('explanation-text');
+    if (explanationText) {
+      explanationText.innerHTML = '<span class="error-text" style="color:var(--color-disinfo); font-weight:var(--font-weight-bold);">Error: No se recibieron datos válidos del análisis.</span>';
+    }
+    return;
+  }
 
-  // Mostrar los botones de acción (estaban ocultos en estado inicial)
+  latestResult = result;
+
+  // Mostrar los botones de acción
   const resultActions = document.getElementById('result-actions');
   if (resultActions) {
     resultActions.style.display = 'flex';
   }
 
-  renderVerdict(res);
-  renderExplanation(res);
-  renderSummary(res);
-  renderFragments(res);
+  renderVerdict(result);
+  renderExplanation(result);
+  renderSummary(result);
+  renderFragments(result);
   initButtons();
 }
 

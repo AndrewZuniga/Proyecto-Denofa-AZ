@@ -9,7 +9,7 @@ class DjangoHistoryRepositoryAdapter(HistoryRepositoryPort):
 
     def save_analysis(self, session_key: str, input_type: str, content: str, results: CredibilityResult) -> Any:
         # Serializamos los fragmentos sospechosos a un string JSON para guardarlo
-        fragments_data = results.get('fragments', results.get('fragmentos_sospechosos', []))
+        fragments_data = results.get('snippets', results.get('fragments', results.get('fragmentos_sospechosos', [])))
         snippets_str = json.dumps(fragments_data)
         
         analysis = SessionAnalysis.objects.create(

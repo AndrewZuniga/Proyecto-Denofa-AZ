@@ -27,8 +27,11 @@ class VisionPort(ABC):
         pass
 class AiAnalysisPort(ABC):
     @abstractmethod
-    def evaluate_credibility(self, text: str) -> CredibilityResult:
-        """Evalúa el texto y retorna el resultado estructurado. Lanza AnalysisError en caso de fallo."""
+    def analyze(self, text: str) -> dict:
+        """
+        Analiza el texto y retorna un diccionario con verdict, score, explanation,
+        fragments y opcionalmente not_news. Implementado por adaptadores concretos.
+        """
         pass
 class HistoryRepositoryPort(ABC):
     @abstractmethod
