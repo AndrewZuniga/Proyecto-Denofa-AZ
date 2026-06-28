@@ -30,17 +30,16 @@ export function detectContentType(str) {
 }
 
 export function formatDate(timestamp) {
-  // Simple mock implementation
-  return 'hace 2 horas';
-}
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-export function loadHistory() {
-  const data = localStorage.getItem('denofaHistory');
-  return data ? JSON.parse(data) : [];
-}
-
-export function saveToHistory(item) {
-  const history = loadHistory();
-  history.unshift(item);
-  localStorage.setItem('denofaHistory', JSON.stringify(history));
+  if (diffMins < 1) return 'justo ahora';
+  if (diffMins < 60) return `hace ${diffMins} minuto${diffMins === 1 ? '' : 's'}`;
+  if (diffHours < 24) return `hace ${diffHours} hora${diffHours === 1 ? '' : 's'}`;
+  if (diffDays < 7) return `hace ${diffDays} día${diffDays === 1 ? '' : 's'}`;
+  return date.toLocaleDateString('es-EC', { day: 'numeric', month: 'short', year: 'numeric' });
 }

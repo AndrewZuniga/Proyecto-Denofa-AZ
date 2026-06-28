@@ -115,6 +115,16 @@ a:hover {
     pointer-events: none;
 }
 
+/* Estado "guardado": botón deshabilitado pero visible en verde */
+.btn--saved:disabled,
+.btn--saved.btn--disabled {
+    opacity: 1;
+    cursor: default;
+    color: var(--color-reliable);
+    border-color: var(--color-reliable) !important;
+    pointer-events: none;
+}
+
 .btn--primary {
     background-color: var(--color-brand);
     color: var(--color-text-on-brand);

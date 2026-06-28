@@ -5,15 +5,117 @@
 import { detectContentType } from './utils.js';
 import { runSteps } from './loading.js';
 
+/**
+ * Coordina la visualización de estados en la nueva estructura de dos columnas.
+ */
 export function showState(id) {
-  document.querySelectorAll('.state-panel').forEach(panel => {
-    panel.classList.remove('state--active');
-  });
-  const active = document.getElementById(id);
-  if (active) active.classList.add('state--active');
+  const leftCol = document.getElementById('left-column');
+  const rightGauge = document.getElementById('state-right-gauge');
+  const rightLoading = document.getElementById('state-loading');
+  const rightResultContent = document.getElementById('state-result-content');
+  
+  if (!leftCol) {
+    // Fallback para standalone pages que no tienen left-column
+    document.querySelectorAll('.state-panel').forEach(panel => panel.classList.remove('state--active'));
+    const active = document.getElementById(id);
+    if (active) active.classList.add('state--active');
+    return;
+  }
+
+  if (id === 'state-input') {
+    leftCol.classList.remove('left-column--blocked');
+    if (rightGauge) rightGauge.style.display = 'flex';
+    if (rightLoading) rightLoading.style.display = 'none';
+    if (rightResultContent) rightResultContent.style.display = 'flex'; // Mantener visible para estabilidad del layout
+    
+    // Gauge al estado idle
+    const gaugeWrapper = document.getElementById('gauge-wrapper');
+    if (gaugeWrapper) {
+       gaugeWrapper.classList.add('gauge--idle');
+       gaugeWrapper.style.display = 'block';
+    }
+    const badge = document.getElementById('verdict-badge');
+    if (badge) badge.classList.add('gauge-badge--hidden');
+    
+    const scoreNum = document.getElementById('gauge-score-num');
+    if (scoreNum) {
+      scoreNum.textContent = '0';
+      scoreNum.className = 'gauge-score__num gauge-score__num--idle';
+    }
+    
+    // Reset mask y aguja
+    const maskArc = document.getElementById('gauge-mask-arc');
+    if (maskArc) {
+      maskArc.style.transition = 'none';
+      maskArc.setAttribute('stroke-dasharray', `0 345.6`);
+    }
+    const needleGroup = document.getElementById('gauge-needle-group');
+    if (needleGroup) {
+      needleGroup.style.transition = 'none';
+      needleGroup.setAttribute('transform', 'rotate(0 130 130)');
+    }
+
+    // Resetear desglose a 0%
+    const summaryContainer = document.getElementById('summary-percentages');
+    if (summaryContainer) {
+      summaryContainer.innerHTML = `
+        <span style="color: var(--color-reliable); opacity: 0.5;">• 0% veracidad</span>
+        <span style="color: var(--color-text-faint);">·</span>
+        <span style="color: var(--color-dubious); opacity: 0.5;">• 0% dudoso</span>
+        <span style="color: var(--color-text-faint);">·</span>
+        <span style="color: var(--color-disinfo); opacity: 0.5;">• 0% falso</span>
+      `;
+    }
+
+    // Resetear fragmentos a 0
+    const fragmentsContainer = document.getElementById('fragments-tags');
+    if (fragmentsContainer) {
+      fragmentsContainer.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(34, 197, 94, 0.05); border-radius: 8px; border-left: 4px solid var(--color-reliable); opacity: 0.5;">
+          <span style="font-weight: 500; color: var(--color-text-muted);">Fragmentos veraces</span>
+          <span style="font-weight: 700; color: var(--color-reliable); font-size: 16px;">0</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(234, 179, 8, 0.05); border-radius: 8px; border-left: 4px solid var(--color-dubious); opacity: 0.5;">
+          <span style="font-weight: 500; color: var(--color-text-muted);">Fragmentos sospechosos</span>
+          <span style="font-weight: 700; color: var(--color-dubious); font-size: 16px;">0</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(239, 68, 68, 0.05); border-radius: 8px; border-left: 4px solid var(--color-disinfo); opacity: 0.5;">
+          <span style="font-weight: 500; color: var(--color-text-muted);">Fragmentos falsos</span>
+          <span style="font-weight: 700; color: var(--color-disinfo); font-size: 16px;">0</span>
+        </div>
+      `;
+    }
+
+    // Ocultar botones de acción — solo se muestran cuando hay resultado
+    const resultActions = document.getElementById('result-actions');
+    if (resultActions) {
+      resultActions.style.display = 'none';
+    }
+  } 
+  else if (id === 'state-loading') {
+    leftCol.classList.add('left-column--blocked');
+    if (rightGauge) rightGauge.style.display = 'none';
+    if (rightLoading) rightLoading.style.display = 'flex';
+    if (rightResultContent) rightResultContent.style.display = 'none';
+  } 
+  else if (id === 'state-result') {
+    leftCol.classList.add('left-column--blocked');
+    if (rightGauge) rightGauge.style.display = 'flex';
+    if (rightLoading) rightLoading.style.display = 'none';
+    if (rightResultContent) rightResultContent.style.display = 'flex';
+    
+    const gaugeWrapper = document.getElementById('gauge-wrapper');
+    if (gaugeWrapper) gaugeWrapper.style.display = 'block';
+  }
 }
 
-
+/**
+ * Pone el gauge en estado de carga visual (pulso gris).
+ * Ahora ya no hace nada porque el gauge se oculta por completo durante la carga.
+ */
+export function setGaugeLoading(on) {
+  // Ya no se necesita animación de carga en el gauge mismo.
+}
 
 function initTextarea() {
   const textarea = document.getElementById('main-textarea');
@@ -22,9 +124,16 @@ function initTextarea() {
 
   if (!textarea) return;
 
-  textarea.addEventListener('input', (e) => {
-    const val = e.target.value;
+  textarea.addEventListener('input', () => {
+    const val = textarea.value;
     counter.textContent = `${val.length} / 5000`;
+
+    // Resetear el mensaje de validación si estaba en rojo
+    const validationMsg = document.getElementById('input-validation-msg');
+    if (validationMsg && validationMsg.style.color !== 'var(--color-text-faint)') {
+      validationMsg.textContent = "Mínimo 20 caracteres. No se admiten URLs de redes sociales, usa la opción de imagen.";
+      validationMsg.style.color = "var(--color-text-faint)";
+    }
 
     if (val.trim().length > 0) {
       textarea.classList.add('textarea--active');
@@ -162,10 +271,39 @@ function initAnalyzeButton() {
 
   btn.addEventListener('click', () => {
     if (window.selectedImageFile) {
+      btn.disabled = true;
+      btn.classList.add('btn--disabled');
       showState('state-loading');
       runSteps('image');
     } else {
-      const type = detectContentType(textarea.value);
+      const val = textarea.value.trim();
+      const validationMsg = document.getElementById('input-validation-msg');
+
+      if (val.length < 20 && !/^https?:\/\//i.test(val)) {
+        if (validationMsg) {
+          validationMsg.textContent = "Caracteres insuficientes. Mínimo 20 caracteres.";
+          validationMsg.style.color = "var(--color-disinfo)";
+        }
+        return;
+      }
+
+      const socialRegex = /(facebook\.com|twitter\.com|x\.com|instagram\.com|tiktok\.com|youtube\.com|linkedin\.com)/i;
+      if (/^https?:\/\//i.test(val) && socialRegex.test(val)) {
+        if (validationMsg) {
+          validationMsg.textContent = "Formato no válido. No se admiten URLs de redes sociales.";
+          validationMsg.style.color = "var(--color-disinfo)";
+        }
+        return;
+      }
+
+      if (validationMsg) {
+        validationMsg.textContent = "Mínimo 20 caracteres. No se admiten URLs de redes sociales, usa la opción de imagen.";
+        validationMsg.style.color = "var(--color-text-faint)";
+      }
+
+      btn.disabled = true;
+      btn.classList.add('btn--disabled');
+      const type = detectContentType(val);
       showState('state-loading');
       runSteps(type);
     }
@@ -183,6 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initPasteImage();
     initAnalyzeButton();
     initSubtitleRotator();
+
+    // Construir tick marks del gauge en el estado idle inicial
+    if (typeof buildGaugeTicks === 'function') {
+      buildGaugeTicks();
+    }
   }
 });
 

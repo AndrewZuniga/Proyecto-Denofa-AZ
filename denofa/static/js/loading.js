@@ -3,9 +3,7 @@
  */
 
 
-import { showState } from './home.js';
-// We must dynamically import renderResult to avoid circular deps if needed, 
-// or just call showState('state-result') and a global renderResult.
+import { showState, setGaugeLoading } from './home.js';
 import { renderResult } from './resultado.js';
 
 const STEPS = {
@@ -104,7 +102,7 @@ export function runSteps(type) {
 
   // Disparar llamada al backend inmediatamente
   const textValue = document.getElementById('main-textarea')?.value || '';
-  
+
   // Obtener el token CSRF de las cookies de Django
   const csrfToken = document.cookie
     .split('; ')
@@ -135,47 +133,51 @@ export function runSteps(type) {
   }
 
   fetchPromise
-  .then(res => {
-    if (!res.ok) {
-      return res.json().then(err => { throw new Error(err.error || 'Error al analizar'); });
-    }
-    return res.json();
-  })
-  .then(data => {
-    backendResult = data;
-    isFetchDone = true;
-    if (isAnimationDone) {
-      handleFinishedAnalysis();
-    }
-  })
-  .catch(err => {
-    backendError = err.message;
-    isFetchDone = true;
-    if (isAnimationDone) {
-      handleFinishedAnalysis();
-    }
-  });
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => { throw new Error(err.error || 'Error al analizar'); });
+      }
+      return res.json();
+    })
+    .then(data => {
+      backendResult = data;
+      isFetchDone = true;
+      if (isAnimationDone) {
+        handleFinishedAnalysis();
+      }
+    })
+    .catch(err => {
+      backendError = err.message;
+      isFetchDone = true;
+      if (isAnimationDone) {
+        handleFinishedAnalysis();
+      }
+    });
 
+  let hasHandledAnalysis = false;
   function handleFinishedAnalysis() {
+    if (hasHandledAnalysis) return;
+    hasHandledAnalysis = true;
+
     if (backendError) {
       alert(backendError);
       showState('state-input');
       return;
     }
-    
+
     // Mark final step as done
     if (steps.length > 0) {
       markStepDone(steps.length - 1);
     }
-    
+
     setTimeout(() => {
-      // If SPA mode
-      if (document.getElementById('state-result')) {
-        showState('state-result');
+      // If SPA mode (index.html with gauge-column)
+      if (document.getElementById('gauge-column')) {
         renderResult(backendResult);
+        showState('state-result');
       } else {
         // Fallback if individual page
-        window.location.href = '/resultado/';
+        window.location.href = '/';
       }
     }, 600);
   }
@@ -225,7 +227,7 @@ export function runSteps(type) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  
+
   // If it's the standalone loading page, inject navbar/footer and run steps automatically
   if (document.getElementById('steps-list') && !document.getElementById('state-loading')) {
     runSteps(getPageType());

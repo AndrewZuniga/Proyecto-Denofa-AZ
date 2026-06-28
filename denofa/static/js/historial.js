@@ -22,12 +22,31 @@ function loadHistory() {
 
 
 function renderCard(item) {
+  let reliable = 0, dubious = 0, disinfo = 0;
+  if (item.snippets && item.snippets.length > 0) {
+    item.snippets.forEach(frag => {
+      if (frag.status === 'reliable') reliable++;
+      else if (frag.status === 'dubious') dubious++;
+      else if (frag.status === 'disinfo') disinfo++;
+    });
+  }
+
+  const total = reliable + dubious + disinfo;
+  let reliablePct = 0, dubiousPct = 0, disinfoPct = 0;
+
+  if (total > 0) {
+    reliablePct = Math.round((reliable / total) * 100);
+    dubiousPct = Math.round((dubious / total) * 100);
+    disinfoPct = Math.round((disinfo / total) * 100);
+  }
+
   return `
     <li>
       <a href="/detalle/${item.id}/" 
          class="history-card"
-         aria-label="Ver detalle del análisis">
-        <div class="history-card__content">
+         aria-label="Ver detalle del análisis"
+         style="display: flex; flex-direction: column;">
+        <div class="history-card__content" style="flex: 1;">
           <div class="history-card__meta">
             <span class="verdict-pill verdict-pill--${item.verdict}">
               ${item.verdictLabel}
@@ -39,8 +58,50 @@ function renderCard(item) {
           <p class="history-card__excerpt">
             ${item.excerpt}
           </p>
+          <div class="history-card__details" style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+            
+            <!-- Fila 1: Desglose -->
+            <div>
+              <h4 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-primary); letter-spacing: 0.05em; margin-bottom: 8px;">Desglose del análisis</h4>
+              <div style="font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                <span style="color: var(--color-reliable); font-weight: 500;">• ${reliablePct}% veracidad</span>
+                <span style="color: var(--color-text-faint);">·</span>
+                <span style="color: var(--color-dubious); font-weight: 500;">• ${dubiousPct}% dudoso</span>
+                <span style="color: var(--color-text-faint);">·</span>
+                <span style="color: var(--color-disinfo); font-weight: 500;">• ${disinfoPct}% falso</span>
+              </div>
+            </div>
+
+            <!-- Fila 2: Fragmentos -->
+            <div>
+              <h4 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-primary); letter-spacing: 0.05em; margin-bottom: 8px;">Análisis de fragmentos</h4>
+              <div style="font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                
+                <div style="display: flex; align-items: center; gap: 4px; color: var(--color-reliable); ${reliable === 0 ? 'opacity: 0.6;' : ''}">
+                  <span style="font-weight: 500;">Veraces</span>
+                  <span style="font-weight: 700; background: rgba(34, 197, 94, 0.15); padding: 2px 6px; border-radius: 4px;">${reliable}</span>
+                </div>
+                
+                <span style="color: var(--color-text-faint);">|</span>
+                
+                <div style="display: flex; align-items: center; gap: 4px; color: var(--color-dubious); ${dubious === 0 ? 'opacity: 0.6;' : ''}">
+                  <span style="font-weight: 500;">Sospechosos</span>
+                  <span style="font-weight: 700; background: rgba(234, 179, 8, 0.15); padding: 2px 6px; border-radius: 4px;">${dubious}</span>
+                </div>
+                
+                <span style="color: var(--color-text-faint);">|</span>
+                
+                <div style="display: flex; align-items: center; gap: 4px; color: var(--color-disinfo); ${disinfo === 0 ? 'opacity: 0.6;' : ''}">
+                  <span style="font-weight: 500;">Falsos</span>
+                  <span style="font-weight: 700; background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 4px;">${disinfo}</span>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
         </div>
-        <span class="history-card__link">
+        <span class="history-card__link" style="margin-top: 12px;">
           Ver más
         </span>
       </a>

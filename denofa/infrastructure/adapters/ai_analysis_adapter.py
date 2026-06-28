@@ -27,7 +27,26 @@ class GeminiAiAnalysisAdapter(AiAnalysisPort):
                 contents=prompt,
                 config=types.GenerateContentConfig(tools=[grounding_tool])
             )
-            result = self._parse_response(response.text)
+            # Extraer las fuentes reales consultadas por Gemini (no generadas por el modelo de lenguaje)
+            real_domains = []  # lista de dominios en minúsculas, para comparación
+            domain_to_uri = {}  # mapa de dominio -> URL real de redirect
+            try:
+                if response.candidates and response.candidates[0].grounding_metadata:
+                    chunks = response.candidates[0].grounding_metadata.grounding_chunks or []
+                    for chunk in chunks:
+                        if chunk.web and chunk.web.title:
+                            domain = chunk.web.title.lower()
+                            real_domains.append(domain)
+                            if domain not in domain_to_uri and chunk.web.uri:
+                                domain_to_uri[domain] = chunk.web.uri
+            except Exception:
+                real_domains = []
+                domain_to_uri = {}
+
+            print("REAL_DOMAINS COMPLETOS:", real_domains)
+            print("DOMAIN_TO_URI:", domain_to_uri)
+            has_grounding = bool(real_domains)
+            result = self._parse_response(response.text, real_domains, domain_to_uri, has_grounding)
             return result
         except Exception as e:
             print(f"Gemini API Error: {str(e)}. Fallback to mock analysis.")
@@ -35,7 +54,7 @@ class GeminiAiAnalysisAdapter(AiAnalysisPort):
 
     def _build_prompt(self, text: str) -> str:
         return f"""Eres un sistema experto en verificación de credibilidad de noticias en español.
-Antes de responder, busca en internet información reciente y confiable para verificar si los hechos mencionados en el texto son reales, han sido reportados por fuentes serias, o si existen desmentidos oficiales al respecto. Usa esa investigación para fundamentar tu veredicto.
+OBLIGATORIO: Antes de responder, DEBES ejecutar al menos una búsqueda real en internet usando tu herramienta de búsqueda, sin excepción, incluso si crees que ya conoces la respuesta o el tema te resulta familiar. No respondas basándote únicamente en tu conocimiento entrenado. Realiza la búsqueda activamente para verificar si los hechos mencionados en el texto son reales, han sido reportados por fuentes serias, o si existen desmentidos oficiales al respecto. Tu respuesta debe estar fundamentada en los resultados de esa búsqueda real, no en tu memoria.
 
 Analiza el siguiente texto y evalúa su credibilidad considerando estos criterios linguísticos:
 
@@ -64,7 +83,19 @@ NO uses bloques de código markdown (no uses ```json ni ```). NO inventes veredi
 
 IMPORTANTE SOBRE LOS SNIPPETS: el campo "snippets" debe contener ÚNICAMENTE fragmentos literales copiados textualmente del TEXTO ORIGINAL proporcionado por el usuario (el que está entre las comillas triples arriba), nunca citas de artículos externos, fuentes de internet, o resultados de tu búsqueda. Cada snippet debe ser una oración o frase que SÍ aparece tal cual en el texto del usuario.
 
-Si durante tu investigación encontraste fuentes externas relevantes que respaldan o contradicen el texto, resúmelas brevemente en el campo "sources" (máximo 3 fuentes, una frase corta cada una describiendo qué encontraste y de qué tipo de fuente, sin necesidad de URL exacta).
+Si durante tu investigación encontraste fuentes externas relevantes que respaldan o contradicen el texto, resúmelas brevemente en el campo "sources" (máximo 3 fuentes). Para cada fuente, identifica el dominio del sitio web (por ejemplo "mayoclinic.org", "bbc.com", "nih.gov") en vez de describir el sitio en palabras. SOLO menciona una fuente si corresponde a una búsqueda que realmente hiciste, nunca describas una fuente de memoria o por inferencia. Si no encontraste una fuente específica y verificable para algo, omítela en vez de inventar una genérica.
+
+OBLIGATORIO: cada objeto dentro de "snippets" DEBE incluir el campo "source_domain". Este es un paso crítico que no puedes omitir. Para cada fragmento, identifica cuál de los dominios que SÍ consultaste en tu búsqueda (los mismos que vas a listar en "sources") respalda específicamente esa afirmación, y copia ese dominio exacto en "source_domain". Si genuinamente ninguno de tus dominios consultados respalda ese fragmento en particular, escribe "source_domain": "" (cadena vacía), pero NUNCA omitas el campo por completo.
+
+Ejemplo de cómo debe verse un snippet completo:
+{{
+  "text": "el agua con limón cura la apendicitis",
+  "status": "disinfo",
+  "reason": "Afirmación médica falsa sin respaldo científico",
+  "source_domain": "mayoclinic.org"
+}}
+
+Recuerda: el valor de "source_domain" debe ser EXACTAMENTE uno de los dominios que aparecen en tu lista de "sources" para este mismo análisis, escrito igual (mismo dominio, sin variaciones de mayúsculas o formato).
 
 Los valores de "status" dentro de cada snippet deben ser EXACTAMENTE uno de estos 3, en minúsculas y sin acentos: "reliable", "dubious", "disinfo". Nunca uses el veredicto completo ni otras palabras.
 
@@ -73,14 +104,14 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin bloque
   "verdict": "CONFIABLE" | "DUDOSO" | "PROBABLE DESINFORMACIÓN",
   "score": número entero entre 0 y 100,
   "explanation": "explicación en español de máximo 120 palabras, sin términos técnicos, específica al contenido analizado",
-  "snippets": [array de 0 a 3 objetos con campos text (frase literal del texto original), status (reliable|dubious|disinfo) y reason (motivo breve)],
+  "snippets": [array de 0 a 3 objetos con campos text (frase literal del texto original), status (reliable|dubious|disinfo), reason (motivo breve) y source_domain (dominio de la fuente que respalda este fragmento específico, opcional, ej. "mayoclinic.org")],
   "sources": [array de 0 a 3 strings cortos describiendo fuentes externas consultadas, puede estar vacío],
   "not_news": false
 }}
 
 El score debe ser coherente con el veredicto: CONFIABLE=70-100, DUDOSO=40-69, PROBABLE DESINFORMACIÓN=0-39."""
 
-    def _parse_response(self, raw_result: str) -> dict:
+    def _parse_response(self, raw_result: str, real_domains: list = None, domain_to_uri: dict = None, has_grounding: bool = False) -> dict:
         result = raw_result.strip()
         if result.startswith("```"):
             result = result.split("```")[1]
@@ -105,22 +136,44 @@ El score debe ser coherente con el veredicto: CONFIABLE=70-100, DUDOSO=40-69, PR
             result["verdict"] = CredibilityDomainService.get_verdict_by_score(result["score"])
         result["explanation"] = str(result["explanation"])
         
-        if "snippets" in result and isinstance(result["snippets"], list):
-            result["fragments"] = result["snippets"]
-        elif "fragments" not in result or not isinstance(result["fragments"], list):
-            result["fragments"] = []
+        if "snippets" not in result or not isinstance(result.get("snippets"), list):
+            result["snippets"] = []
             
         if "sources" in result and isinstance(result["sources"], list):
-            result["sources"] = result["sources"][:3]
+            verified_sources = []
+            for source in result["sources"][:5]:
+                source_lower = str(source).lower()
+                if any(rd in source_lower or source_lower in rd for rd in real_domains):
+                    verified_sources.append(source)
+            result["sources"] = verified_sources[:3]
         else:
             result["sources"] = []
 
         valid_statuses = ["reliable", "dubious", "disinfo"]
-        for fragment in result.get("fragments", []):
+        for fragment in result.get("snippets", []):
             if isinstance(fragment, dict):
                 status = str(fragment.get("status", "")).lower().strip()
                 fragment["status"] = status if status in valid_statuses else "dubious"
 
+        if real_domains is None:
+            real_domains = []
+
+        for fragment in result.get("snippets", []):
+            if isinstance(fragment, dict):
+                source_domain = str(fragment.get("source_domain", "")).lower().strip()
+                if domain_to_uri is None:
+                    domain_to_uri = {}
+                if source_domain and any(source_domain in rd or rd in source_domain for rd in real_domains):
+                    fragment["source_verified"] = True
+                    fragment["source_domain"] = source_domain
+                    matched_domain = next((rd for rd in real_domains if source_domain in rd or rd in source_domain), None)
+                    fragment["source_url"] = domain_to_uri.get(matched_domain, "")
+                else:
+                    fragment["source_verified"] = False
+                    fragment["source_domain"] = source_domain if source_domain else None
+                    fragment["source_url"] = ""
+
+        result["has_grounding"] = has_grounding
         return result
 
     def extract_text_from_image(self, image_bytes: bytes, mime_type: str) -> str:

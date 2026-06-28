@@ -37,11 +37,23 @@ def history_view(request):
     # Serializar el historial a un formato compatible con historial.js
     analyses_list = []
     for item in analyses:
+        snippets = []
+        try:
+            parsed = json.loads(item.snippets_json) if item.snippets_json else []
+            if isinstance(parsed, dict):
+                snippets = parsed.get('snippets', [])
+            elif isinstance(parsed, list):
+                snippets = parsed
+        except Exception:
+            snippets = []
+            
         analyses_list.append({
             'id': item.id,
             'verdict': item.verdict,  # 'CONFIABLE', etc.
+            'score': item.score,
             'date': item.created_at.isoformat(),
-            'excerpt': item.original_content[:70] + ('...' if len(item.original_content) > 70 else '')
+            'excerpt': item.original_content[:70] + ('...' if len(item.original_content) > 70 else ''),
+            'snippets': snippets
         })
     analyses_json = json.dumps(analyses_list)
     
@@ -64,15 +76,30 @@ def detail_view(request, analysis_id):
     if not analysis:
         raise Http404("El análisis no existe o no pertenece a la sesión activa.")
         
-    # Deserializar los fragmentos JSON guardados
+    # Deserializar los fragmentos JSON guardados (compatible con formato viejo y nuevo)
+    snippets = []
+    sources = []
+    has_grounding = False
     try:
-        snippets = json.loads(analysis.snippets_json) if analysis.snippets_json else []
+        parsed = json.loads(analysis.snippets_json) if analysis.snippets_json else []
+        if isinstance(parsed, dict):
+            # Formato nuevo: {"snippets": [...], "sources": [...], "has_grounding": bool}
+            snippets = parsed.get('snippets', [])
+            sources = parsed.get('sources', [])
+            has_grounding = parsed.get('has_grounding', False)
+        elif isinstance(parsed, list):
+            # Formato viejo: array plano de snippets, sin fuentes
+            snippets = parsed
     except Exception:
         snippets = []
+        sources = []
+        has_grounding = False
         
     return render(request, 'pages/detalle.html', {
         'analysis': analysis,
-        'snippets': snippets
+        'snippets': snippets,
+        'sources': sources,
+        'has_grounding': has_grounding
     })
 
 def analyze_view(request):
