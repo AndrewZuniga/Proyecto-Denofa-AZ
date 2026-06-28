@@ -1,4 +1,3 @@
-import { saveToHistory } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -38,24 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   } else if (btnSave) {
     btnSave.addEventListener('click', () => {
-      // Recuperar resultado guardado en sessionStorage si existe
-      const analysisId = sessionStorage.getItem('currentAnalysisId');
-      const historyRaw = localStorage.getItem('denofaHistory');
-      
-      let saved = false;
-      if (historyRaw && analysisId) {
-        const history = JSON.parse(historyRaw);
-        const result = history.find(r => String(r.id) === String(analysisId));
-        if (result) {
-          saveToHistory(result);
-          saved = true;
-        }
-      }
-
-      if (!saved) {
-        // En un caso real sin mock podríamos crear uno falso para la demo, pero por ahora solo simulamos guardado para la UI
-      }
-
       // --- ANIMACIÓN DE GUARDADO ---
       const originalHtml = btnSave.innerHTML;
       

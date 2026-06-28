@@ -29,24 +29,53 @@
             <span class="verdict-pill verdict-pill--{{ snippet.status }}">
               {% if snippet.status == 'reliable' %}Verificado
               {% elif snippet.status == 'dubious' %}Dudoso
+              {% elif snippet.status == 'disinfo' %}Probable desinformación
               {% else %}No verificado
               {% endif %}
             </span>
           </div>
           <blockquote class="analysis-row__fragment">
-            <mark class="{% if snippet.status == 'reliable' %}highlight--green{% elif snippet.status == 'dubious' %}highlight--yellow{% else %}highlight--red{% endif %}">
+            <mark class="{% if snippet.status == 'reliable' %}highlight--green{% elif snippet.status == 'dubious' %}highlight--yellow{% elif snippet.status == 'disinfo' %}highlight--red{% else %}highlight--gray{% endif %}">
               "{{ snippet.text }}"
             </mark>
           </blockquote>
           <p class="analysis-row__explanation">
             {{ snippet.reason }}
           </p>
+          {% if snippet.source_domain %}
+          <p style="font-size: var(--font-size-xs); margin-top: var(--space-xs); display: flex; align-items: center; gap: 4px;">
+            {% if snippet.source_verified %}
+            <span style="color: var(--color-reliable);" title="Fuente verificada">✓</span>
+            <span style="color: var(--color-text-secondary);">
+              Fuente verificada: 
+              {% if snippet.source_url %}
+              <a href="{{ snippet.source_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-brand); font-weight: var(--font-weight-semibold); text-decoration: underline;">{{ snippet.source_domain }}</a>
+              {% else %}
+              <strong>{{ snippet.source_domain }}</strong>
+              {% endif %}
+            </span>
+            {% else %}
+              {% if has_grounding %}
+              <span style="color: var(--color-text-faint);" title="Fuente no verificada">○</span>
+              <span style="color: var(--color-text-faint);">Fuente mencionada (sin verificar): {{ snippet.source_domain }}</span>
+              {% else %}
+              <span style="color: var(--color-text-faint);">Fuente mencionada por la IA: {{ snippet.source_domain }}</span>
+              {% endif %}
+            {% endif %}
+          </p>
+          {% endif %}
         </article>
         {% empty %}
         <p style="padding: var(--space-xl) 0; text-align: center; color: var(--color-text-muted);">
           No se detectaron fragmentos sospechosos en este análisis.
         </p>
         {% endfor %}
+        {% if snippets and not has_grounding %}
+        <p style="font-size: var(--font-size-xs); color: var(--color-text-faint); margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border);">
+          ℹ️ Para este análisis, la IA no realizó una búsqueda activa en internet, por lo que las fuentes mencionadas no pudieron ser verificadas automáticamente.
+        </p>
+        {% endif %}
+
       </div>
 
       <!-- Botón Compartir -->

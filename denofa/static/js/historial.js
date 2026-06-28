@@ -22,25 +22,6 @@ function loadHistory() {
 
 
 function renderCard(item) {
-  const score = item.score || 0;
-  let reliablePct = 0, dubiousPct = 0, disinfoPct = 0;
-
-  if (score >= 70) {
-    reliablePct = score;
-    dubiousPct = Math.floor((100 - score) * 0.7);
-    disinfoPct = 100 - score - dubiousPct;
-  } else if (score < 40) {
-    disinfoPct = 100 - score;
-    dubiousPct = Math.floor(score * 0.7);
-    reliablePct = score - dubiousPct;
-  } else {
-    dubiousPct = Math.max(score, 100 - score);
-    if (dubiousPct < 50) dubiousPct = 50;
-    const remainder = 100 - dubiousPct;
-    reliablePct = Math.floor(remainder / 2);
-    disinfoPct = remainder - reliablePct;
-  }
-
   let reliable = 0, dubious = 0, disinfo = 0;
   if (item.snippets && item.snippets.length > 0) {
     item.snippets.forEach(frag => {
@@ -48,6 +29,15 @@ function renderCard(item) {
       else if (frag.status === 'dubious') dubious++;
       else if (frag.status === 'disinfo') disinfo++;
     });
+  }
+
+  const total = reliable + dubious + disinfo;
+  let reliablePct = 0, dubiousPct = 0, disinfoPct = 0;
+
+  if (total > 0) {
+    reliablePct = Math.round((reliable / total) * 100);
+    dubiousPct = Math.round((dubious / total) * 100);
+    disinfoPct = Math.round((disinfo / total) * 100);
   }
 
   return `

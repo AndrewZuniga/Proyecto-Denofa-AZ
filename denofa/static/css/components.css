@@ -531,6 +531,13 @@ mark.highlight--red {
   background-color: var(--color-highlight-red);
 }
 
+mark.highlight--gray {
+  background-color: rgba(128, 128, 128, 0.15);
+  color: var(--color-text-secondary);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
 .actions-row {
   display: flex;
   gap: var(--space-sm);

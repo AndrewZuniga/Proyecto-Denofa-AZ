@@ -3,7 +3,7 @@
  * Incluye el gauge/velocímetro semicircular con animación de arco y aguja.
  */
 
-import { animateNumber, saveToHistory } from './utils.js';
+import { animateNumber } from './utils.js';
 import { showState } from './home.js';
 
 
@@ -261,8 +261,7 @@ function initButtons() {
     btnSave.addEventListener('click', () => {
       if (!latestResult || btnSave.disabled) return;
 
-      // Guardar en historial
-      saveToHistory(latestResult);
+
 
       // Transición visual: verde + ícono check + texto "Guardado" + bloqueado
       btnSave.classList.add('btn--saved');

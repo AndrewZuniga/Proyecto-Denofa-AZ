@@ -8,9 +8,15 @@ class DjangoHistoryRepositoryAdapter(HistoryRepositoryPort):
     """Adaptador de persistencia e historial que implementa HistoryRepositoryPort usando Django ORM."""
 
     def save_analysis(self, session_key: str, input_type: str, content: str, results: CredibilityResult) -> Any:
-        # Serializamos los fragmentos sospechosos a un string JSON para guardarlo
+        # Serializamos los fragmentos sospechosos y las fuentes externas a un string JSON para guardarlo
         fragments_data = results.get('snippets', results.get('fragments', results.get('fragmentos_sospechosos', [])))
-        snippets_str = json.dumps(fragments_data)
+        sources_data = results.get('sources', [])
+        combined_data = {
+            'snippets': fragments_data,
+            'sources': sources_data,
+            'has_grounding': results.get('has_grounding', False)
+        }
+        snippets_str = json.dumps(combined_data)
         
         analysis = SessionAnalysis.objects.create(
             session_key=session_key,
