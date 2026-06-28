@@ -182,7 +182,7 @@ function renderSummary(result) {
   }
 
   container.innerHTML = `
-    <span style="color: var(--color-reliable);">• ${reliablePct}% veracidad</span>
+    <span style="color: var(--color-reliable);">• ${reliablePct}% confiabilidad</span>
     <span style="color: var(--color-text-faint);">·</span>
     <span style="color: var(--color-dubious);">• ${dubiousPct}% dudoso</span>
     <span style="color: var(--color-text-faint);">·</span>
@@ -207,7 +207,7 @@ function renderFragments(result) {
   // Siempre mostrar las 3 filas, con opacidad reducida si es 0
   container.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(34, 197, 94, ${reliable > 0 ? '0.1' : '0.05'}); border-radius: 8px; border-left: 4px solid var(--color-reliable); ${reliable === 0 ? 'opacity: 0.5;' : ''}">
-      <span style="font-weight: 500; color: var(--color-text);">Fragmentos veraces</span>
+      <span style="font-weight: 500; color: var(--color-text);">Fragmentos confiables</span>
       <span style="font-weight: 700; color: var(--color-reliable); font-size: 16px;">${reliable}</span>
     </div>
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(234, 179, 8, ${dubious > 0 ? '0.1' : '0.05'}); border-radius: 8px; border-left: 4px solid var(--color-dubious); ${dubious === 0 ? 'opacity: 0.5;' : ''}">

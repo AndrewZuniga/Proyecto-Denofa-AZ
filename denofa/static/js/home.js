@@ -59,7 +59,7 @@ export function showState(id) {
     const summaryContainer = document.getElementById('summary-percentages');
     if (summaryContainer) {
       summaryContainer.innerHTML = `
-        <span style="color: var(--color-reliable); opacity: 0.5;">• 0% veracidad</span>
+        <span style="color: var(--color-reliable); opacity: 0.5;">• 0% confiabilidad</span>
         <span style="color: var(--color-text-faint);">·</span>
         <span style="color: var(--color-dubious); opacity: 0.5;">• 0% dudoso</span>
         <span style="color: var(--color-text-faint);">·</span>
@@ -72,7 +72,7 @@ export function showState(id) {
     if (fragmentsContainer) {
       fragmentsContainer.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(34, 197, 94, 0.05); border-radius: 8px; border-left: 4px solid var(--color-reliable); opacity: 0.5;">
-          <span style="font-weight: 500; color: var(--color-text-muted);">Fragmentos veraces</span>
+          <span style="font-weight: 500; color: var(--color-text-muted);">Fragmentos confiables</span>
           <span style="font-weight: 700; color: var(--color-reliable); font-size: 16px;">0</span>
         </div>
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(234, 179, 8, 0.05); border-radius: 8px; border-left: 4px solid var(--color-dubious); opacity: 0.5;">

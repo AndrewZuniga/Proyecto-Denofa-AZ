@@ -876,4 +876,318 @@ h1 + .subtitle-rotator,
     border-right: 1px solid var(--color-border);
     padding-right: var(--space-xl);
   }
-}
+}
+
+/* ── MÁS QUE UN DETECTOR (FEATURES SECTION) ── */
+.features-section {
+  width: 100%;
+  max-width: var(--max-width-page);
+  margin: var(--space-3xl) auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.features-header {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.features-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.features-grid-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  align-items: stretch;
+}
+
+.detector-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.detector-cards-grid .card-wide {
+  grid-column: 1 / -1;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* El padding lo hereda de .card (var(--space-xl)) */
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  gap: var(--space-lg);
+  justify-content: space-between;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card__img-wrap {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-color: var(--color-bg-alt);
+  border-radius: var(--radius-md);
+}
+
+.feature-card__img-wrap--wide {
+  height: 280px;
+}
+
+.feature-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.feature-card__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-sm);
+}
+
+.feature-card__title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.feature-card__text {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-read);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .detector-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .feature-card__img-wrap,
+  .feature-card__img-wrap--wide {
+    height: 180px;
+  }
+}
+
+/* ── SECCIONES INFORMATIVAS GENERALES ─────────────── */
+.info-section {
+  width: 100%;
+  max-width: var(--max-width-page);
+  margin: var(--space-3xl) auto 0;
+}
+
+/* Card-contenedor de sección: override de max-width heredado de .card
+   para que ocupe el ancho completo de .info-section */
+.section-card {
+  max-width: 100% !important;
+  padding: var(--space-2xl);
+}
+
+/* ── CÓMO FUNCIONA (2 columnas) ───────────────── */
+.how-it-works {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3xl);
+  align-items: start;
+}
+
+.how-it-works__lead {
+  position: sticky;
+  top: calc(var(--height-navbar) + var(--space-lg));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Caja de estadísticas / métricas en la columna izquierda */
+.how-it-works__stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--color-brand-light);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(2, 132, 199, 0.15);
+}
+
+.how-it-works__stat {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-label);
+  color: var(--color-brand-dark);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-read);
+}
+
+.how-it-works__stat-sep {
+  display: none; /* oculto — los items ya van en columna */
+}
+
+.how-it-works__title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-tight);
+  margin: 0;
+}
+
+.how-it-works__body {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-loose);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.how-it-works__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ── STEP CARD (para sección Cómo funciona) ──────── */
+.step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Variante interna: fondo sutil sobre el blanco del card-contenedor */
+.step-card--inner {
+  background-color: var(--color-surface-input);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  padding: var(--space-xl);
+  box-shadow: none;
+}
+
+.step-card:hover,
+.step-card--inner:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.14);
+}
+
+.step-card__num {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand);
+  color: var(--color-text-on-brand);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.step-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.step-card__title {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.step-card__text {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-read);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── SUBTITLE DE SECCIÓN ─────────────────────────── */
+.features-subtitle {
+  text-align: center;
+  color: var(--color-text-faint);
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-body);
+  font-family: var(--font-serif);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── STEPS COLUMNS (3 columnas Cómo verificar) ───── */
+.steps-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.steps-col-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Variante interna: fondo sutil para diferenciarse del card-contenedor */
+.steps-col-card--inner {
+  background-color: var(--color-surface-input);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  padding: var(--space-lg);
+}
+
+.steps-col-card:hover,
+.steps-col-card--inner:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.14);
+}
+
+.steps-col-card__title {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.steps-col-card__text {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-read);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .how-it-works {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  .how-it-works__lead {
+    position: static;
+  }
+  .steps-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
