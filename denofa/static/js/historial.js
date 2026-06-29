@@ -64,7 +64,7 @@ function renderCard(item) {
             <div>
               <h4 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-primary); letter-spacing: 0.05em; margin-bottom: 8px;">Desglose del análisis</h4>
               <div style="font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
-                <span style="color: var(--color-reliable); font-weight: 500;">• ${reliablePct}% veracidad</span>
+                <span style="color: var(--color-reliable); font-weight: 500;">• ${reliablePct}% confiabilidad</span>
                 <span style="color: var(--color-text-faint);">·</span>
                 <span style="color: var(--color-dubious); font-weight: 500;">• ${dubiousPct}% dudoso</span>
                 <span style="color: var(--color-text-faint);">·</span>
@@ -78,7 +78,7 @@ function renderCard(item) {
               <div style="font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
                 
                 <div style="display: flex; align-items: center; gap: 4px; color: var(--color-reliable); ${reliable === 0 ? 'opacity: 0.6;' : ''}">
-                  <span style="font-weight: 500;">Veraces</span>
+                  <span style="font-weight: 500;">Confiables</span>
                   <span style="font-weight: 700; background: rgba(34, 197, 94, 0.15); padding: 2px 6px; border-radius: 4px;">${reliable}</span>
                 </div>
                 
