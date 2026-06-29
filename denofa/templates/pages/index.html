@@ -129,7 +129,7 @@
             <section aria-labelledby="summary-heading">
               <h3 id="summary-heading" style="font-size: 13px; font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); margin-bottom: var(--space-sm);">Desglose del análisis</h3>
               <div id="summary-percentages" style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); font-size: var(--font-size-label); font-weight: var(--font-weight-medium);">
-                <span style="color: var(--color-reliable); opacity: 0.5;">• 0% veracidad</span>
+                <span style="color: var(--color-reliable); opacity: 0.5;">• 0% confiabilidad</span>
                 <span style="color: var(--color-text-faint);">·</span>
                 <span style="color: var(--color-dubious); opacity: 0.5;">• 0% dudoso</span>
                 <span style="color: var(--color-text-faint);">·</span>
@@ -143,7 +143,7 @@
               </div>
               <div id="fragments-tags" class="fragments-tags" style="display: flex; flex-direction: column; gap: var(--space-xs);">
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(34, 197, 94, 0.05); border-radius: 8px; border-left: 4px solid var(--color-reliable); opacity: 0.5;">
-                  <span style="font-weight: 500; color: var(--color-text-muted);">Fragmentos veraces</span>
+                  <span style="font-weight: 500; color: var(--color-text-muted);">Fragmentos confiables</span>
                   <span style="font-weight: 700; color: var(--color-reliable); font-size: 16px;">0</span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(234, 179, 8, 0.05); border-radius: 8px; border-left: 4px solid var(--color-dubious); opacity: 0.5;">
@@ -201,94 +201,125 @@
 
     </div>
 
-<section id="que-es-denofa" class="container" style="padding: var(--space-2xl) 0; max-width: var(--max-width-card); margin: 0 auto;">
+    <!-- SECCIÓN INFORMATIVA: Más que un detector -->
+    <div class="features-section">
+      <header class="features-header">
+        <h2 class="features-title">Más que un detector: un identificador detallado de noticias falsas que afectan a la sociedad</h2>
+        <p style="text-align: center; color: var(--color-text-faint); margin-top: var(--space-sm); font-size: var(--font-size-body); font-family: var(--font-serif); max-width: 800px; margin-left: auto; margin-right: auto;">Más allá de un número: análisis por fragmento, fuentes identificadas y el porqué detrás de cada veredicto.</p>
+      </header>
 
-  <h2 style="font-family: var(--font-display); font-size: var(--font-size-h2); text-align: center; margin-bottom: var(--space-xl);">
-    ¿Cómo funciona DenoFA?
-  </h2>
+      <div class="detector-cards-grid">
+        <div class="card feature-card">
+          <div class="feature-card__img-wrap">
+            <img src="{% static 'images/presentacion/fragmento_subrayado.png' %}" alt="Fragmentos resaltados" class="feature-card__img">
+          </div>
+          <div class="feature-card__content">
+            <h3 class="feature-card__title">Fragmentos resaltados por nivel de confianza</h3>
+            <p class="feature-card__text">Cada parte sospechosa del texto se resalta en rojo, ámbar o verde, igual que el sistema de colores del medidor principal. Así podrás identificar de inmediato qué secciones de la noticia necesitan mayor atención.</p>
+          </div>
+        </div>
 
-  <!-- Bloque 1: 3 pasos -->
-  <div style="display: flex; flex-direction: column; gap: var(--space-lg); margin-bottom: var(--space-2xl);">
+        <div class="card feature-card">
+          <div class="feature-card__img-wrap">
+            <img src="{% static 'images/presentacion/score.jpeg' %}" alt="Score claro" class="feature-card__img">
+          </div>
+          <div class="feature-card__content">
+            <h3 class="feature-card__title">Un score claro, no solo una opinión</h3>
+            <p class="feature-card__text">DenoFA entrega un puntaje de 0 a 100 junto con un veredicto estructurado (Confiable, Dudoso o Probable desinformación). Este resultado se basa en el cruce exhaustivo de fuentes reales, alejándose de impresiones genéricas.</p>
+          </div>
+        </div>
 
-    <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
-      <span style="flex-shrink:0; width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: white; display:flex; align-items:center; justify-content:center; font-weight: var(--font-weight-semibold);">1</span>
-      <div>
-        <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-xs);">Pega tu texto, una URL o sube una imagen</h3>
-        <p style="color: var(--color-text-secondary); font-size: var(--font-size-body);">
-          Copia el texto de una noticia, pega el enlace de un artículo web, o sube una captura de pantalla. DenoFA acepta los tres formatos y extrae el contenido automáticamente.
-        </p>
+        <div class="card feature-card card-wide">
+          <div class="feature-card__img-wrap feature-card__img-wrap--wide">
+            <img src="{% static 'images/presentacion/noticia.jpeg' %}" alt="Verificación con fuentes" class="feature-card__img">
+          </div>
+          <div class="feature-card__content">
+            <h3 class="feature-card__title">Verificación con fuentes reales</h3>
+            <p class="feature-card__text">Nuestro análisis se respalda realizando búsquedas reales y verificadas en internet, no en suposiciones del modelo. Las fuentes y enlaces consultados se muestran de forma transparente junto al resultado de cada análisis.</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
-      <span style="flex-shrink:0; width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: white; display:flex; align-items:center; justify-content:center; font-weight: var(--font-weight-semibold);">2</span>
-      <div>
-        <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-xs);">La IA analiza el contenido en profundidad</h3>
-        <p style="color: var(--color-text-secondary); font-size: var(--font-size-body);">
-          Nuestro sistema evalúa el lenguaje, busca fuentes verificables en internet y contrasta las afirmaciones con información real, detectando patrones como tono alarmista, falta de fuentes o afirmaciones inverificables.
-        </p>
+
+    <!-- SECCIÓN: Cómo funciona la verificación en DenoFA -->
+    <div class="info-section">
+      <div class="card section-card">
+        <div class="how-it-works">
+
+          <!-- Col izquierda: título + párrafo + estadísticas -->
+          <div class="how-it-works__lead">
+            <h2 class="how-it-works__title">Cómo funciona la verificación en DenoFA</h2>
+            <p class="how-it-works__body">DenoFA no se basa en una sola señal. Cruzamos el lenguaje del texto con fuentes reales obtenidas mediante búsqueda en internet para entregar un resultado respaldado por evidencia. Cada veredicto incluye fragmentos concretos del texto analizado y las fuentes que lo sustentan, para que puedas entender el porqué, no solo el qué.</p>
+            <div class="how-it-works__stats">
+              <span class="how-it-works__stat">Verificación apoyada en búsqueda real en internet</span>
+              <span class="how-it-works__stat-sep">·</span>
+              <span class="how-it-works__stat">Score de 0 a 100 + veredicto explícito</span>
+              <span class="how-it-works__stat-sep">·</span>
+              <span class="how-it-works__stat">Fragmentos resaltados por nivel de confianza</span>
+            </div>
+          </div>
+
+          <!-- Col derecha: 3 pasos apilados -->
+          <div class="how-it-works__steps">
+            <div class="step-card step-card--inner">
+              <span class="step-card__num">01</span>
+              <div class="step-card__body">
+                <h3 class="step-card__title">Análisis de lenguaje</h3>
+                <p class="step-card__text">Identificamos patrones típicos de desinformación: alarmismo, ausencia de fuentes, afirmaciones extremas sin respaldo verificable.</p>
+              </div>
+            </div>
+            <div class="step-card step-card--inner">
+              <span class="step-card__num">02</span>
+              <div class="step-card__body">
+                <h3 class="step-card__title">Verificación cruzada</h3>
+                <p class="step-card__text">El contenido se contrasta con fuentes reales encontradas mediante búsqueda en internet, no con suposiciones del modelo.</p>
+              </div>
+            </div>
+            <div class="step-card step-card--inner">
+              <span class="step-card__num">03</span>
+              <div class="step-card__body">
+                <h3 class="step-card__title">Resultado con evidencia</h3>
+                <p class="step-card__text">Obtén un score, un veredicto claro, y los fragmentos específicos que sustentan la conclusión, con sus fuentes cuando están disponibles.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 
-    <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
-      <span style="flex-shrink:0; width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: white; display:flex; align-items:center; justify-content:center; font-weight: var(--font-weight-semibold);">3</span>
-      <div>
-        <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-xs);">Recibe tu resultado con score y evidencia</h3>
-        <p style="color: var(--color-text-secondary); font-size: var(--font-size-body);">
-          Obtén un puntaje de credibilidad del 0 al 100, un veredicto claro (Confiable, Dudoso o Probable Desinformación), y los fragmentos específicos del texto que motivaron esa conclusión.
-        </p>
+    <!-- SECCIÓN: Cómo verificar una noticia con DenoFA -->
+    <div class="info-section">
+      <div class="card section-card">
+        <header class="features-header">
+          <h2 class="features-title">Cómo verificar una noticia con DenoFA</h2>
+          <p class="features-subtitle">Comprueba la credibilidad de cualquier contenido en tres simples pasos</p>
+        </header>
+
+        <div class="steps-columns">
+
+          <div class="steps-col-card steps-col-card--inner">
+            <span class="step-card__num">1</span>
+            <h3 class="steps-col-card__title">Pega tu contenido</h3>
+            <p class="steps-col-card__text">Pega el texto directamente, una URL, o sube una imagen de la noticia que quieres verificar.</p>
+          </div>
+
+          <div class="steps-col-card steps-col-card--inner">
+            <span class="step-card__num">2</span>
+            <h3 class="steps-col-card__title">Ejecuta el análisis</h3>
+            <p class="steps-col-card__text">DenoFA cruza la información con fuentes reales y evalúa patrones de desinformación en segundos.</p>
+          </div>
+
+          <div class="steps-col-card steps-col-card--inner">
+            <span class="step-card__num">3</span>
+            <h3 class="steps-col-card__title">Revisa el resultado</h3>
+            <p class="steps-col-card__text">Obtén un score, el veredicto, y los fragmentos exactos que respaldan la conclusión.</p>
+          </div>
+
+        </div>
       </div>
     </div>
-
-  </div>
-
-  <!-- Bloque 2: Ejemplo visual de fragmentos resaltados -->
-  <div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-2xl);">
-    <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-md);">Así marcamos el contenido sospechoso</h3>
-    <p style="font-size: var(--font-size-body); line-height: 1.7; color: var(--color-text-secondary);">
-      "Un científico independiente asegura haber descubierto energía infinita usando solo imanes,
-      <span style="background: color-mix(in srgb, var(--color-disinfo) 20%, transparent); color: var(--color-disinfo); font-weight: var(--font-weight-semibold); padding: 2px 4px; border-radius: 4px;">sin citar ninguna fuente verificable</span>.
-      La noticia
-      <span style="background: color-mix(in srgb, var(--color-dubious) 20%, transparent); color: var(--color-dubious); font-weight: var(--font-weight-semibold); padding: 2px 4px; border-radius: 4px;">circula únicamente en redes sociales</span>,
-      mientras que estudios reconocidos confirman que esto
-      <span style="background: color-mix(in srgb, var(--color-disinfo) 20%, transparent); color: var(--color-disinfo); font-weight: var(--font-weight-semibold); padding: 2px 4px; border-radius: 4px;">viola las leyes de la termodinámica</span>."
-    </p>
-    <div style="display:flex; gap: var(--space-lg); margin-top: var(--space-md); flex-wrap: wrap;">
-      <span style="display:flex; align-items:center; gap:6px; font-size: var(--font-size-label);">
-        <span style="width:10px; height:10px; border-radius:50%; background: var(--color-disinfo); display:inline-block;"></span>
-        Probable desinformación
-      </span>
-      <span style="display:flex; align-items:center; gap:6px; font-size: var(--font-size-label);">
-        <span style="width:10px; height:10px; border-radius:50%; background: var(--color-dubious); display:inline-block;"></span>
-        Dudoso
-      </span>
-      <span style="display:flex; align-items:center; gap:6px; font-size: var(--font-size-label);">
-        <span style="width:10px; height:10px; border-radius:50%; background: var(--color-reliable); display:inline-block;"></span>
-        Confiable
-      </span>
-    </div>
-  </div>
-
-  <!-- Bloque 3: Leyenda del score -->
-  <div class="card" style="padding: var(--space-xl);">
-    <h3 style="font-size: var(--font-size-h4); margin-bottom: var(--space-md);">¿Qué significa el puntaje?</h3>
-    <div style="display:flex; flex-direction: column; gap: var(--space-sm);">
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border);">
-        <span class="verdict-pill verdict-pill--reliable">Confiable</span>
-        <span style="font-size: var(--font-size-label); color: var(--color-text-secondary);">70 – 100 puntos</span>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border);">
-        <span class="verdict-pill verdict-pill--dubious">Dudoso</span>
-        <span style="font-size: var(--font-size-label); color: var(--color-text-secondary);">40 – 69 puntos</span>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: var(--space-sm) 0;">
-        <span class="verdict-pill verdict-pill--disinfo">Probable Desinformación</span>
-        <span style="font-size: var(--font-size-label); color: var(--color-text-secondary);">0 – 39 puntos</span>
-      </div>
-    </div>
-  </div>
-
-</section>
 
   </div>
 </section>
